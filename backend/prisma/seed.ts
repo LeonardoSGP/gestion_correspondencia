@@ -4,9 +4,8 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Ejecutando seed...');
+  console.log('Ejecutando seed...');
 
-  // Crear usuario administrador por defecto
   const adminPassword = await bcrypt.hash('admin123', 10);
 
   await prisma.user.upsert({
@@ -20,12 +19,12 @@ async function main() {
     },
   });
 
-  console.log('✅ Seed completado.');
+  console.log('Seed completado.');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error en seed:', e);
+    console.error('Error en seed:', e);
     process.exit(1);
   })
   .finally(async () => {

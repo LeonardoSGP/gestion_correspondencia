@@ -1,4 +1,4 @@
-# 📬 Sistema Institucional de Gestión de Correspondencia
+# Sistema Institucional de Gestion de Correspondencia
 
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white" alt="Node.js">
@@ -11,99 +11,99 @@
 
 ---
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
-- [Resumen del Proyecto](#-resumen-del-proyecto)
-- [Módulos del Sistema](#-módulos-del-sistema)
-- [Funcionalidades](#-funcionalidades)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación y Configuración](#-instalación-y-configuración)
-- [Variables de Entorno](#-variables-de-entorno)
-- [Ejecución](#-ejecución)
-- [Docker](#-docker)
-- [API Documentation](#-api-documentation)
-- [Testing](#-testing)
-- [CI/CD](#-cicd)
-- [Contribución](#-contribución)
-
----
-
-## 📖 Resumen del Proyecto
-
-Sistema diseñado para **digitalizar, controlar y estandarizar** el flujo de correspondencia oficial (entrada y salida) de una institución. Garantiza:
-
-- ✅ **Trazabilidad** completa del ciclo de vida de cada documento
-- ✅ **Cumplimiento** de los tiempos de entrega
-- ✅ **Resguardo** correcto de acuses de recibo
-- ✅ **Estandarización** de procesos de la Unidad Central de Correspondencia (UCC)
-
-El sistema conecta a **remitentes**, **destinatarios**, **personal de mensajería** y **administradores de archivo** en un flujo operativo centralizado.
+- [Resumen del Proyecto](#resumen-del-proyecto)
+- [Modulos del Sistema](#modulos-del-sistema)
+- [Funcionalidades](#funcionalidades)
+- [Stack Tecnologico](#stack-tecnologico)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Requisitos Previos](#requisitos-previos)
+- [Instalacion y Configuracion](#instalacion-y-configuracion)
+- [Variables de Entorno](#variables-de-entorno)
+- [Ejecucion](#ejecucion)
+- [Docker](#docker)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [CI/CD](#cicd)
+- [Contribucion](#contribucion)
 
 ---
 
-## 🧩 Módulos del Sistema
+## Resumen del Proyecto
 
-| Módulo | Descripción | Estado |
+Sistema diseñado para **digitalizar, controlar y estandarizar** el flujo de correspondencia oficial (entrada y salida) de una institucion. Garantiza:
+
+- **Trazabilidad** completa del ciclo de vida de cada documento
+- **Cumplimiento** de los tiempos de entrega
+- **Resguardo** correcto de acuses de recibo
+- **Estandarizacion** de procesos de la Unidad Central de Correspondencia (UCC)
+
+El sistema conecta a **remitentes**, **destinatarios**, **personal de mensajeria** y **administradores de archivo** en un flujo operativo centralizado.
+
+---
+
+## Modulos del Sistema
+
+| Modulo | Descripcion | Estado |
 |--------|-------------|--------|
-| 📥 **Recepción (Entrada)** | Gestión de correspondencia proveniente del exterior dirigida a la institución | 🔲 Pendiente |
-| 📤 **Despacho (Salida)** | Gestión de correspondencia generada internamente para ser enviada al exterior | 🔲 Pendiente |
-| 🚚 **Enrutamiento y Mensajería** | Asignación de rutas, paquetería externa (Correos de México) y mensajería interna | 🔲 Pendiente |
-| 🗄️ **Archivo y Trazabilidad** | Almacenamiento de acuses, control de folios y seguimiento del ciclo de vida | 🔲 Pendiente |
-| 🔐 **Autenticación** | Login, registro, JWT, roles y permisos | 🔲 Pendiente |
+| **Recepcion (Entrada)** | Gestion de correspondencia proveniente del exterior dirigida a la institucion | Pendiente |
+| **Despacho (Salida)** | Gestion de correspondencia generada internamente para ser enviada al exterior | Pendiente |
+| **Enrutamiento y Mensajeria** | Asignacion de rutas, paqueteria externa (Correos de Mexico) y mensajeria interna | Pendiente |
+| **Archivo y Trazabilidad** | Almacenamiento de acuses, control de folios y seguimiento del ciclo de vida | Pendiente |
+| **Autenticacion** | Login, registro, JWT, roles y permisos | Pendiente |
 
 ---
 
-## ⚙️ Funcionalidades
+## Funcionalidades
 
-### 📥 Recepción (Entrada)
-| ID | Funcionalidad | Descripción |
+### Recepcion (Entrada)
+| ID | Funcionalidad | Descripcion |
 |----|---------------|-------------|
-| F1 | Captura y registro | Validación de remitente, anexos y generación de folio único |
-| F2 | Clasificación | Por prioridad (urgente, ordinaria) y tipo (confidencial, con valores) |
-| F3 | Sellos y acuses | Impresión de sellos digitales y generación de acuses de recibo |
-| F4 | Distribución interna | Recolección de firmas de recepción (Fichas de Gestión / Control de Correspondencia) |
+| F1 | Captura y registro | Validacion de remitente, anexos y generacion de folio unico |
+| F2 | Clasificacion | Por prioridad (urgente, ordinaria) y tipo (confidencial, con valores) |
+| F3 | Sellos y acuses | Impresion de sellos digitales y generacion de acuses de recibo |
+| F4 | Distribucion interna | Recoleccion de firmas de recepcion (Fichas de Gestion / Control de Correspondencia) |
 
-### 📤 Despacho (Salida)
-| ID | Funcionalidad | Descripción |
+### Despacho (Salida)
+| ID | Funcionalidad | Descripcion |
 |----|---------------|-------------|
-| F5 | Solicitudes de envío | Recepción de solicitudes por parte de las Áreas Administrativas (UA/AA) |
-| F6 | Validación de salida | Verificación de firmas autógrafas, anexos y etiquetado |
-| F7 | Asignación de despacho | Según destino (Local, Nacional, Internacional) e integración con guías de paquetería |
-| F8 | Cierre de ciclo | Carga y archivo de acuses físicos digitalizados |
+| F5 | Solicitudes de envio | Recepcion de solicitudes por parte de las Areas Administrativas (UA/AA) |
+| F6 | Validacion de salida | Verificacion de firmas autografas, anexos y etiquetado |
+| F7 | Asignacion de despacho | Segun destino (Local, Nacional, Internacional) e integracion con guias de paqueteria |
+| F8 | Cierre de ciclo | Carga y archivo de acuses fisicos digitalizados |
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnologico
 
-| Capa | Tecnología |
+| Capa | Tecnologia |
 |------|-----------|
 | **Runtime** | Node.js 20 |
 | **Lenguaje** | TypeScript |
 | **Framework HTTP** | Express.js 4 |
 | **ORM** | Prisma 5 |
 | **Base de datos** | MySQL 8.0 |
-| **Autenticación** | JWT (jsonwebtoken + bcryptjs) |
-| **Validación** | Zod |
-| **Documentación API** | Swagger (swagger-jsdoc + swagger-ui-express) |
+| **Autenticacion** | JWT (jsonwebtoken + bcryptjs) |
+| **Validacion** | Zod |
+| **Documentacion API** | Swagger (swagger-jsdoc + swagger-ui-express) |
 | **Upload de archivos** | Multer |
 | **Testing** | Jest + Supertest |
-| **Containerización** | Docker + Docker Compose |
+| **Containerizacion** | Docker + Docker Compose |
 | **CI/CD** | GitHub Actions |
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 gestion_correspondencia/
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                  # Integración Continua
+│       ├── ci.yml                  # Integracion Continua
 │       ├── cd.yml                  # Entrega Continua (Docker Hub)
-│       ├── security.yml            # Auditoría de dependencias
-│       └── docker-verify.yml       # Verificación de Docker
+│       ├── security.yml            # Auditoria de dependencias
+│       └── docker-verify.yml       # Verificacion de Docker
 │
 ├── backend/
 │   ├── prisma/
@@ -111,23 +111,23 @@ gestion_correspondencia/
 │   │   └── seed.ts                 # Datos iniciales
 │   ├── src/
 │   │   ├── middlewares/
-│   │   │   ├── auth.middleware.ts   # Verificación JWT
+│   │   │   ├── auth.middleware.ts   # Verificacion JWT
 │   │   │   ├── error.middleware.ts  # Manejo global de errores
 │   │   │   └── role.middleware.ts   # Control de acceso por rol
 │   │   ├── modules/
-│   │   │   ├── auth/               # Autenticación (router, service, repository, schema, types)
-│   │   │   ├── recepcion/          # Módulo de Recepción (Entrada)
-│   │   │   ├── despacho/           # Módulo de Despacho (Salida)
-│   │   │   ├── mensajeria/         # Módulo de Enrutamiento y Mensajería
-│   │   │   └── archivo/            # Módulo de Archivo y Trazabilidad
-│   │   ├── app.ts                  # Configuración de Express
+│   │   │   ├── auth/               # Autenticacion (router, service, repository, schema, types)
+│   │   │   ├── recepcion/          # Modulo de Recepcion (Entrada)
+│   │   │   ├── despacho/           # Modulo de Despacho (Salida)
+│   │   │   ├── mensajeria/         # Modulo de Enrutamiento y Mensajeria
+│   │   │   └── archivo/            # Modulo de Archivo y Trazabilidad
+│   │   ├── app.ts                  # Configuracion de Express
 │   │   ├── server.ts               # Entry point
 │   │   ├── config.ts               # Variables de entorno (Zod)
 │   │   ├── errors.ts               # Clase AppError
 │   │   └── prisma.config.ts        # Cliente Prisma singleton
 │   ├── tests/
 │   │   ├── unit/                   # Tests unitarios
-│   │   └── jest.setup.ts           # Configuración de Jest
+│   │   └── jest.setup.ts           # Configuracion de Jest
 │   ├── Dockerfile                  # Imagen Docker (multi-stage)
 │   ├── docker-entrypoint.sh        # Script de inicio del contenedor
 │   ├── .dockerignore
@@ -139,19 +139,20 @@ gestion_correspondencia/
 ├── frontend/                       # Frontend (Vite + React + TypeScript)
 │   └── README.md
 │
-├── docker-compose.yml              # Orquestación: MySQL + Backend + Frontend
+├── docker-compose.yml              # Orquestacion: MySQL + Backend + Frontend
+├── claude.md                       # Reglas para asistentes AI
 ├── .gitignore
-└── README.md                       # ← Estás aquí
+└── README.md
 ```
 
-### Patrón de Módulos (por módulo)
+### Patron de Modulos (por modulo)
 
-Cada módulo dentro de `src/modules/` sigue esta convención:
+Cada modulo dentro de `src/modules/` sigue esta convencion:
 
 ```
 modulo/
-├── modulo.router.ts       # Definición de rutas Express
-├── modulo.service.ts      # Lógica de negocio
+├── modulo.router.ts       # Definicion de rutas Express
+├── modulo.service.ts      # Logica de negocio
 ├── modulo.repository.ts   # Acceso a datos (Prisma)
 ├── modulo.schema.ts       # Validaciones (Zod)
 └── modulo.types.ts        # Interfaces y tipos TypeScript
@@ -159,16 +160,16 @@ modulo/
 
 ---
 
-## 📋 Requisitos Previos
+## Requisitos Previos
 
-- **Node.js** ≥ 20.x
-- **npm** ≥ 10.x
+- **Node.js** >= 20.x
+- **npm** >= 10.x
 - **MySQL** 8.0 (local o Docker)
-- **Docker** y **Docker Compose** (opcional, para containerización)
+- **Docker** y **Docker Compose** (opcional, para containerizacion)
 
 ---
 
-## 🚀 Instalación y Configuración
+## Instalacion y Configuracion
 
 ### 1. Clonar el repositorio
 
@@ -203,35 +204,35 @@ npm run seed
 
 ```bash
 cd frontend
-# Inicializar con Vite (si aún no se ha hecho)
+# Inicializar con Vite (si aun no se ha hecho)
 # npx create-vite@latest ./ --template react-ts
 npm install
 ```
 
 ---
 
-## 🔐 Variables de Entorno
+## Variables de Entorno
 
 Copiar `backend/.env.example` a `backend/.env` y configurar:
 
-| Variable | Descripción | Ejemplo |
+| Variable | Descripcion | Ejemplo |
 |----------|-------------|---------|
 | `PORT` | Puerto del servidor Express | `3001` |
 | `DB_HOST` | Host de MySQL | `127.0.0.1` |
 | `DB_PORT` | Puerto de MySQL | `3306` |
 | `DB_NAME` | Nombre de la base de datos | `gestion_correspondencia` |
 | `DB_USER` | Usuario de MySQL | `root` |
-| `DB_PASS` | Contraseña de MySQL | `tu_password` |
+| `DB_PASS` | Contrasena de MySQL | `tu_password` |
 | `JWT_SECRET` | Secreto para access tokens | `openssl rand -hex 64` |
-| `JWT_EXPIRES_IN` | Duración del access token | `15m` |
+| `JWT_EXPIRES_IN` | Duracion del access token | `15m` |
 | `JWT_REFRESH_SECRET` | Secreto para refresh tokens | `openssl rand -hex 64` |
-| `JWT_REFRESH_EXPIRES_IN` | Duración del refresh token | `7d` |
-| `DATABASE_URL` | URL de conexión Prisma | `mysql://root:pass@localhost:3306/db` |
+| `JWT_REFRESH_EXPIRES_IN` | Duracion del refresh token | `7d` |
+| `DATABASE_URL` | URL de conexion Prisma | `mysql://root:pass@localhost:3306/db` |
 | `FRONTEND_URL` | URL del frontend (para CORS) | `https://tudominio.com` |
 
 ---
 
-## ▶️ Ejecución
+## Ejecucion
 
 ### Desarrollo (con hot-reload)
 
@@ -242,7 +243,7 @@ npm run dev
 # Swagger en http://localhost:3001/api-docs
 ```
 
-### Producción
+### Produccion
 
 ```bash
 cd backend
@@ -252,7 +253,7 @@ npm start
 
 ---
 
-## 🐳 Docker
+## Docker
 
 ### Levantar todo el stack con Docker Compose
 
@@ -260,7 +261,7 @@ npm start
 docker compose up --build -d
 ```
 
-| Servicio | Puerto local | Descripción |
+| Servicio | Puerto local | Descripcion |
 |----------|-------------|-------------|
 | MySQL | `3307` | Base de datos |
 | Backend | `3002` | API REST |
@@ -272,7 +273,7 @@ docker compose up --build -d
 docker compose down
 ```
 
-### Detener y eliminar volúmenes
+### Detener y eliminar volumenes
 
 ```bash
 docker compose down -v
@@ -280,31 +281,31 @@ docker compose down -v
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
-La documentación interactiva de la API está disponible vía **Swagger UI**:
+La documentacion interactiva de la API esta disponible via **Swagger UI**:
 
 - **Desarrollo:** http://localhost:3001/api-docs
 - **Docker:** http://localhost:3002/api-docs
 
 ### Endpoints principales
 
-| Método | Ruta | Descripción |
+| Metodo | Ruta | Descripcion |
 |--------|------|-------------|
 | `GET` | `/` | Health check |
 | `GET` | `/health` | Estado del servidor |
-| `POST` | `/api/auth/login` | Iniciar sesión |
+| `POST` | `/api/auth/login` | Iniciar sesion |
 | `POST` | `/api/auth/register` | Registrar usuario |
 | `GET` | `/api/recepcion` | Listar correspondencia de entrada |
 | `POST` | `/api/recepcion` | Registrar nueva correspondencia |
 | `GET` | `/api/despacho` | Listar correspondencia de salida |
-| `POST` | `/api/despacho` | Solicitar envío externo |
-| `GET` | `/api/mensajeria/rutas` | Consultar rutas de mensajería |
+| `POST` | `/api/despacho` | Solicitar envio externo |
+| `GET` | `/api/mensajeria/rutas` | Consultar rutas de mensajeria |
 | `GET` | `/api/archivo/:id/historial` | Historial de un documento |
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 cd backend
@@ -321,20 +322,20 @@ npm run test:coverage
 
 ---
 
-## 🔄 CI/CD
+## CI/CD
 
 El proyecto incluye **4 workflows** de GitHub Actions:
 
-| Workflow | Archivo | Disparador | Descripción |
+| Workflow | Archivo | Disparador | Descripcion |
 |----------|---------|-----------|-------------|
 | **CI** | `ci.yml` | Push/PR a `master` | Type-check, tests, build (backend + frontend) |
-| **CD** | `cd.yml` | Manual (`workflow_dispatch`) | Build y push de imágenes Docker a Docker Hub |
-| **Security** | `security.yml` | Push/PR + cron semanal | Auditoría de dependencias (`npm audit`) |
-| **Docker Verify** | `docker-verify.yml` | Cambios en Dockerfiles | Validación de `docker-compose.yml` y build dry-run |
+| **CD** | `cd.yml` | Manual (`workflow_dispatch`) | Build y push de imagenes Docker a Docker Hub |
+| **Security** | `security.yml` | Push/PR + cron semanal | Auditoria de dependencias (`npm audit`) |
+| **Docker Verify** | `docker-verify.yml` | Cambios en Dockerfiles | Validacion de `docker-compose.yml` y build dry-run |
 
 ### Secrets requeridos en GitHub
 
-| Secret/Variable | Descripción |
+| Secret/Variable | Descripcion |
 |----------------|-------------|
 | `DOCKERHUB_USERNAME` (variable) | Usuario de Docker Hub |
 | `DOCKERHUB_TOKEN` (secret) | Access Token de Docker Hub |
@@ -342,7 +343,7 @@ El proyecto incluye **4 workflows** de GitHub Actions:
 
 ---
 
-## 🤝 Contribución
+## Contribucion
 
 1. Crear una rama desde `master`: `git checkout -b feature/mi-funcionalidad`
 2. Hacer commits descriptivos
@@ -352,12 +353,6 @@ El proyecto incluye **4 workflows** de GitHub Actions:
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Proyecto institucional de uso interno.
-
----
-
-<p align="center">
-  <sub>Desarrollado con ❤️ para la digitalización de procesos institucionales</sub>
-</p>
