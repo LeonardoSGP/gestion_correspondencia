@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: correspondencia_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-Correspondencia2026}
+      MYSQL_DATABASE: gestion_correspondencia
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: correspondencia_backend
+    environment:
+      PORT: 3001
+      DB_HOST: mysql_db
+      DB_PORT: 3306
+      DB_NAME: gestion_correspondencia
+      DB_USER: root
+      DB_PASS: ${DB_PASS:-Correspondencia2026}
+      JWT_SECRET: ${JWT_SECRET:-correspondencia_jwt_secret_key_2026}
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-correspondencia_refresh_secret_key_2026}
+      JWT_REFRESH_EXPIRES_IN: 7d
+      DATABASE_URL: mysql://root:${DB_PASS:-Correspondencia2026}@mysql_db:3306/gestion_correspondencia?schema=public
+      PRISMA_CLIENT_ENGINE_TYPE: library
+      PRISMA_CLI_QUERY_ENGINE_TYPE: library
+    ports:
+      - "3002:3001"
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      - mysql_db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: correspondencia_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  backend_uploads:

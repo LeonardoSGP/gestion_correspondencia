@@ -1,0 +1,42 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// Prisma Schema — Sistema de Gestión de Correspondencia
+// ═══════════════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Usuarios y Roles ────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  OPERADOR_UCC
+  MENSAJERO
+  AREA_ADMINISTRATIVA
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  role      Role     @default(OPERADOR_UCC)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// TODO: Agregar modelos conforme se desarrollen los módulos:
+// - Correspondencia (entrada/salida)
+// - Folio
+// - Acuse
+// - RutaMensajeria
+// - AreaAdministrativa
+// - GuiaPaqueteria
