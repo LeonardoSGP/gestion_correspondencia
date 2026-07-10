@@ -1,6 +1,14 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// Prisma Schema — Sistema de Gestión de Correspondencia
-// ═══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// Prisma Schema -- Sistema de Gestion de Correspondencia
+// =============================================================================
+//
+// Modulos:
+//   1. Recepcion (Entrada)     -- F1, F2, F3, F4
+//   2. Despacho (Salida)       -- F5, F6, F7, F8
+//   3. Enrutamiento/Mensajeria -- Rutas, asignaciones, guias
+//   4. Archivo y Trazabilidad  -- Folios, acuses, historial
+//
+// =============================================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -11,32 +19,285 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── Usuarios y Roles ────────────────────────────────────────────────────────
+// =============================================================================
+// USUARIOS Y ROLES
+// =============================================================================
 
 enum Role {
-  ADMIN
-  OPERADOR_UCC
-  MENSAJERO
-  AREA_ADMINISTRATIVA
+  ADMIN                // Administrador del sistema
+  OPERADOR_UCC         // Operador de la Unidad Central de Correspondencia
+  MENSAJERO            // Personal de mensajeria interna/externa
+  AREA_ADMINISTRATIVA  // Usuario de un area administrativa (UA/AA)
 }
 
 model User {
   id        Int      @id @default(autoincrement())
-  nombre    String
-  email     String   @unique
-  password  String
+  nombre    String   @db.VarChar(150)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
   role      Role     @default(OPERADOR_UCC)
   activo    Boolean  @default(true)
+  areaId    Int?     @map("area_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  area                   AreaAdministrativa?      @relation(fields: [areaId], references: [id])
+  correspondenciasRegistradas Correspondencia[]   @relation("RegistradaPor")
+  asignacionesMensajero  AsignacionMensajeria[]   @relation("Mensajero")
+  firmasRecepcion        FirmaRecepcion[]
+  historialAcciones      HistorialCorrespondencia[]
 
   @@map("users")
 }
 
-// TODO: Agregar modelos conforme se desarrollen los módulos:
-// - Correspondencia (entrada/salida)
-// - Folio
-// - Acuse
-// - RutaMensajeria
-// - AreaAdministrativa
-// - GuiaPaqueteria
+// =============================================================================
+// AREAS ADMINISTRATIVAS
+// =============================================================================
+
+model AreaAdministrativa {
+  id           Int      @id @default(autoincrement())
+  nombre       String   @db.VarChar(200)
+  clave        String   @unique @db.VarChar(20)  // Clave corta del area (ej: DGTI, DAF)
+  responsable  String?  @db.VarChar(150)          // Nombre del titular
+  activa       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  usuarios              User[]
+  correspondenciasDestino Correspondencia[] @relation("DestinoArea")
+  correspondenciasOrigen  Correspondencia[] @relation("OrigenArea")
+
+  @@map("areas_administrativas")
+}
+
+// =============================================================================
+// CORRESPONDENCIA (modelo central)
+// =============================================================================
+
+enum TipoCorrespondencia {
+  ENTRADA   // Correspondencia recibida del exterior
+  SALIDA    // Correspondencia generada internamente para envio
+}
+
+enum Prioridad {
+  URGENTE
+  ORDINARIA
+}
+
+enum Clasificacion {
+  NORMAL
+  CONFIDENCIAL
+  CON_VALORES   // Correspondencia que contiene valores (cheques, documentos valiosos)
+}
+
+enum EstadoCorrespondencia {
+  REGISTRADA          // Recien capturada en el sistema
+  EN_REVISION         // En proceso de validacion (firmas, anexos)
+  EN_DISTRIBUCION     // Asignada para distribucion interna
+  EN_RUTA             // En camino (mensajero asignado)
+  ENTREGADA           // Entregada al destinatario
+  ACUSE_PENDIENTE     // Entregada pero falta digitalizar acuse
+  CERRADA             // Ciclo completo (acuse archivado)
+  RECHAZADA           // Rechazada por validacion fallida
+  DEVUELTA            // Devuelta al remitente
+}
+
+model Correspondencia {
+  id               Int                    @id @default(autoincrement())
+  folio            String                 @unique @db.VarChar(30)   // Folio unico generado por el sistema
+  tipo             TipoCorrespondencia
+  prioridad        Prioridad              @default(ORDINARIA)
+  clasificacion    Clasificacion          @default(NORMAL)
+  estado           EstadoCorrespondencia  @default(REGISTRADA)
+
+  // Datos del documento
+  asunto           String                 @db.VarChar(500)
+  descripcion      String?                @db.Text
+  numDocumento     String?                @map("num_documento") @db.VarChar(100) // Numero de oficio/documento externo
+  fechaDocumento   DateTime?              @map("fecha_documento")                 // Fecha impresa en el documento
+  cantidadAnexos   Int                    @default(0) @map("cantidad_anexos")
+  observaciones    String?                @db.Text
+
+  // Remitente (externo para ENTRADA, area interna para SALIDA)
+  remitente        String?                @db.VarChar(250)   // Nombre del remitente externo
+  cargoRemitente   String?                @map("cargo_remitente") @db.VarChar(200)
+  instRemitente    String?                @map("inst_remitente") @db.VarChar(250) // Institucion del remitente
+
+  // Destinatario (area interna para ENTRADA, externo para SALIDA)
+  destinatario     String?                @db.VarChar(250)   // Nombre del destinatario externo
+  cargoDestinatario String?               @map("cargo_destinatario") @db.VarChar(200)
+  instDestinatario String?                @map("inst_destinatario") @db.VarChar(250)
+
+  // Areas internas involucradas
+  areaDestinoId    Int?                   @map("area_destino_id")
+  areaOrigenId     Int?                   @map("area_origen_id")
+
+  // Usuario que registro
+  registradoPorId  Int                    @map("registrado_por_id")
+
+  // Fechas del ciclo
+  fechaRecepcion   DateTime?              @map("fecha_recepcion")
+  fechaDespacho    DateTime?              @map("fecha_despacho")
+  fechaEntrega     DateTime?              @map("fecha_entrega")
+  fechaLimite      DateTime?              @map("fecha_limite")     // Fecha limite de respuesta/entrega
+
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+
+  // Relaciones
+  areaDestino      AreaAdministrativa?     @relation("DestinoArea", fields: [areaDestinoId], references: [id])
+  areaOrigen       AreaAdministrativa?     @relation("OrigenArea", fields: [areaOrigenId], references: [id])
+  registradoPor    User                   @relation("RegistradaPor", fields: [registradoPorId], references: [id])
+
+  anexos           Anexo[]
+  acuses           Acuse[]
+  firmas           FirmaRecepcion[]
+  asignaciones     AsignacionMensajeria[]
+  historial        HistorialCorrespondencia[]
+  selloDigital     SelloDigital?
+
+  @@index([tipo])
+  @@index([estado])
+  @@index([prioridad])
+  @@index([fechaRecepcion])
+  @@index([areaDestinoId])
+  @@index([areaOrigenId])
+  @@map("correspondencias")
+}
+
+// =============================================================================
+// ANEXOS (documentos adjuntos a la correspondencia)
+// =============================================================================
+
+model Anexo {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @map("correspondencia_id")
+  nombreArchivo      String          @map("nombre_archivo") @db.VarChar(255)
+  rutaArchivo        String          @map("ruta_archivo") @db.VarChar(500)
+  tipoMime           String?         @map("tipo_mime") @db.VarChar(100)
+  tamanoBytes        Int?            @map("tamano_bytes")
+  descripcion        String?         @db.VarChar(300)
+  createdAt          DateTime        @default(now()) @map("created_at")
+
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+
+  @@map("anexos")
+}
+
+// =============================================================================
+// SELLO DIGITAL (F3 -- generacion de sellos para correspondencia de entrada)
+// =============================================================================
+
+model SelloDigital {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @unique @map("correspondencia_id")
+  codigoSello        String          @unique @map("codigo_sello") @db.VarChar(50)
+  fechaHoraSellado   DateTime        @default(now()) @map("fecha_hora_sellado")
+  cadenaOriginal     String?         @map("cadena_original") @db.Text  // Cadena para verificacion
+
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+
+  @@map("sellos_digitales")
+}
+
+// =============================================================================
+// ACUSES DE RECIBO (F3, F8 -- acuses generados y digitalizados)
+// =============================================================================
+
+enum TipoAcuse {
+  GENERADO      // Acuse digital generado por el sistema al recibir
+  DIGITALIZADO  // Acuse fisico escaneado/digitalizado al cerrar ciclo
+}
+
+model Acuse {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @map("correspondencia_id")
+  tipo               TipoAcuse
+  rutaArchivo        String?         @map("ruta_archivo") @db.VarChar(500)
+  fechaGeneracion    DateTime        @default(now()) @map("fecha_generacion")
+  observaciones      String?         @db.Text
+
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+
+  @@map("acuses")
+}
+
+// =============================================================================
+// FIRMAS DE RECEPCION (F4 -- control de firmas internas)
+// =============================================================================
+
+model FirmaRecepcion {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @map("correspondencia_id")
+  firmadoPorId       Int             @map("firmado_por_id")
+  fechaFirma         DateTime        @default(now()) @map("fecha_firma")
+  observaciones      String?         @db.Text
+
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  firmadoPor         User            @relation(fields: [firmadoPorId], references: [id])
+
+  @@unique([correspondenciaId, firmadoPorId])
+  @@map("firmas_recepcion")
+}
+
+// =============================================================================
+// ASIGNACION DE MENSAJERIA (F7 -- rutas y despacho)
+// =============================================================================
+
+enum AlcanceDespacho {
+  LOCAL
+  NACIONAL
+  INTERNACIONAL
+}
+
+enum EstadoAsignacion {
+  ASIGNADA
+  EN_RUTA
+  ENTREGADA
+  FALLIDA
+}
+
+model AsignacionMensajeria {
+  id                 Int              @id @default(autoincrement())
+  correspondenciaId  Int              @map("correspondencia_id")
+  mensajeroId        Int              @map("mensajero_id")
+  alcance            AlcanceDespacho  @default(LOCAL)
+  estado             EstadoAsignacion @default(ASIGNADA)
+
+  // Datos de paqueteria externa (si aplica)
+  proveedorPaqueteria String?         @map("proveedor_paqueteria") @db.VarChar(100) // Ej: Correos de Mexico, DHL
+  numeroGuia          String?         @map("numero_guia") @db.VarChar(100)
+
+  fechaAsignacion    DateTime         @default(now()) @map("fecha_asignacion")
+  fechaEntrega       DateTime?        @map("fecha_entrega")
+  observaciones      String?          @db.Text
+
+  correspondencia    Correspondencia  @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  mensajero          User             @relation("Mensajero", fields: [mensajeroId], references: [id])
+
+  @@map("asignaciones_mensajeria")
+}
+
+// =============================================================================
+// HISTORIAL DE CORRESPONDENCIA (trazabilidad completa)
+// =============================================================================
+
+model HistorialCorrespondencia {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @map("correspondencia_id")
+  usuarioId          Int             @map("usuario_id")
+  accion             String          @db.VarChar(100)  // Ej: "REGISTRADA", "VALIDADA", "DESPACHADA"
+  detalle            String?         @db.Text
+  estadoAnterior     String?         @map("estado_anterior") @db.VarChar(50)
+  estadoNuevo        String?         @map("estado_nuevo") @db.VarChar(50)
+  createdAt          DateTime        @default(now()) @map("created_at")
+
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  usuario            User            @relation(fields: [usuarioId], references: [id])
+
+  @@index([correspondenciaId])
+  @@index([createdAt])
+  @@map("historial_correspondencia")
+}
