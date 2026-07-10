@@ -9,6 +9,12 @@ import { config } from './config';
 
 // Importar routers de módulos
 import { authRouter } from './modules/auth/auth.router';
+import { areasRouter } from './modules/areas/areas.router';
+import { recepcionRouter } from './modules/recepcion/recepcion.router';
+import { despachoRouter } from './modules/despacho/despacho.router';
+import { mensajeriaRouter } from './modules/mensajeria/mensajeria.router';
+import { archivoRouter } from './modules/archivo/archivo.router';
+import { authMiddleware } from './middlewares/auth.middleware';
 
 const app: Application = express();
 
@@ -70,12 +76,11 @@ app.get('/health', (_req, res) => {
 
 // ── Rutas ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRouter);
-
-// TODO: Registrar rutas de los módulos conforme se desarrollen
-// app.use('/api/recepcion', authMiddleware, recepcionRouter);
-// app.use('/api/despacho', authMiddleware, despachoRouter);
-// app.use('/api/mensajeria', authMiddleware, mensajeriaRouter);
-// app.use('/api/archivo', authMiddleware, archivoRouter);
+app.use('/api/areas', areasRouter);
+app.use('/api/recepcion', authMiddleware, recepcionRouter);
+app.use('/api/despacho', authMiddleware, despachoRouter);
+app.use('/api/mensajeria', authMiddleware, mensajeriaRouter);
+app.use('/api/archivo', authMiddleware, archivoRouter);
 
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
