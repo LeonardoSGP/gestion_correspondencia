@@ -1,38 +1,27 @@
-import { AppError } from '../../errors';
 import { DespachoRepository } from './despacho.repository';
 import { CreateDespachoInput, DespachoFilter } from './despacho.types';
+import { AppError } from '../../errors';
 
-const despachoRepo = new DespachoRepository();
+const repository = new DespachoRepository();
 
 export class DespachoService {
-  async solicitar(input: CreateDespachoInput, usuarioId: number) {
-    return despachoRepo.create(input, usuarioId);
+  async registrar(input: CreateDespachoInput, usuarioId: number | string) {
+    return await repository.create(input, typeof usuarioId === 'string' ? parseInt(usuarioId) : usuarioId);
   }
 
   async obtenerTodas(filtros: DespachoFilter) {
-    return despachoRepo.findAll(filtros);
+    return await repository.findAll(filtros);
   }
 
-  async obtenerPorId(id: number) {
-    const correspondencia = await despachoRepo.findById(id);
-    if (!correspondencia) throw new AppError(404, 'Correspondencia no encontrada');
-    if (correspondencia.tipo !== 'SALIDA') throw new AppError(400, 'El documento no es de tipo SALIDA');
+  async obtenerPorId(id: number | string) {
+    const parsedId = typeof id === 'string' ? parseInt(id) : id;
+    const correspondencia = await repository.findById(parsedId);
+    if (!correspondencia) {
+      throw new AppError('Correspondencia no encontrada', 404);
+    }
+    if (correspondencia.tipo !== 'SALIDA') {
+      throw new AppError('La correspondencia no es de tipo SALIDA', 400);
+    }
     return correspondencia;
-  }
-
-  async validarSalida(id: number, estado: string, usuarioId: number, observaciones?: string) {
-    const correspondencia = await this.obtenerPorId(id);
-    if (correspondencia.estado !== 'EN_REVISION') {
-      throw new AppError(400, 'La correspondencia debe estar en estado EN_REVISION para ser validada');
-    }
-    return despachoRepo.updateEstado(id, estado, usuarioId, observaciones);
-  }
-
-  async asignarDespacho(id: number, usuarioId: number, data: any) {
-    const correspondencia = await this.obtenerPorId(id);
-    if (correspondencia.estado !== 'EN_DISTRIBUCION') {
-      throw new AppError(400, 'La correspondencia debe estar validada (EN_DISTRIBUCION) antes de asignarla a mensajeria');
-    }
-    return despachoRepo.asignar(id, usuarioId, data);
   }
 }

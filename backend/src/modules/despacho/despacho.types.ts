@@ -2,11 +2,11 @@ export interface CreateDespachoInput {
   asunto: string;
   descripcion?: string;
   numDocumento?: string;
-  fechaDocumento?: string;
+  fechaDocumento?: Date;
   cantidadAnexos?: number;
   observaciones?: string;
-  prioridad?: 'URGENTE' | 'ORDINARIA';
-  clasificacion?: 'NORMAL' | 'CONFIDENCIAL' | 'CON_VALORES';
+  prioridad?: string;
+  clasificacion?: string;
   destinatario: string;
   cargoDestinatario?: string;
   instDestinatario?: string;

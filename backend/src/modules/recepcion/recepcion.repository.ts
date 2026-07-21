@@ -1,25 +1,34 @@
 import prisma from '../../prisma.config';
 import { CreateRecepcionInput, RecepcionFilter } from './recepcion.types';
+import crypto from 'crypto';
 
 export class RecepcionRepository {
-  async generateFolio(): Promise<string> {
-    const today = new Date();
-    const year = today.getFullYear();
-    const count = await prisma.correspondencia.count({
-      where: {
-        createdAt: {
-          gte: new Date(year, 0, 1),
-          lt: new Date(year + 1, 0, 1)
-        }
-      }
+  private async generateFolio(): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `EXT-${year}-`;
+    
+    const lastRecord = await prisma.correspondencia.findFirst({
+      where: { folio: { startsWith: prefix } },
+      orderBy: { folio: 'desc' }
     });
-    return `EXT-${year}-${(count + 1).toString().padStart(5, '0')}`;
+
+    let nextNumber = 1;
+    if (lastRecord && lastRecord.folio) {
+      const parts = lastRecord.folio.split('-');
+      const numStr = parts[parts.length - 1];
+      nextNumber = parseInt(numStr, 10) + 1;
+    }
+
+    const paddedNumber = nextNumber.toString().padStart(5, '0');
+    return `${prefix}${paddedNumber}`;
   }
 
   async create(data: CreateRecepcionInput, registradoPorId: number) {
-    const folio = await this.generateFolio();
-    
     return prisma.$transaction(async (tx) => {
+      const folio = await this.generateFolio();
+      const codigoSello = crypto.randomUUID();
+      const cadenaOriginal = `||${folio}|${data.asunto}|${new Date().toISOString()}||`;
+
       const correspondencia = await tx.correspondencia.create({
         data: {
           folio,
@@ -39,20 +48,30 @@ export class RecepcionRepository {
           areaDestinoId: data.areaDestinoId,
           registradoPorId,
           fechaRecepcion: new Date(),
+          selloDigital: {
+            create: {
+              codigoSello,
+              cadenaOriginal
+            }
+          },
+          acuses: {
+            create: {
+              tipo: 'GENERADO',
+              observaciones: 'Acuse generado automáticamente en el registro'
+            }
+          },
+          historial: {
+            create: {
+              usuarioId: registradoPorId,
+              accion: 'REGISTRO',
+              detalle: 'Registro inicial de correspondencia de entrada',
+              estadoNuevo: 'REGISTRADA'
+            }
+          }
         },
         include: {
-          areaDestino: true,
-          registradoPor: { select: { id: true, nombre: true } }
-        }
-      });
-
-      await tx.historialCorrespondencia.create({
-        data: {
-          correspondenciaId: correspondencia.id,
-          usuarioId: registradoPorId,
-          accion: 'REGISTRO_INICIAL',
-          estadoNuevo: 'REGISTRADA',
-          detalle: 'Registro de correspondencia de entrada'
+          selloDigital: true,
+          acuses: true
         }
       });
 
@@ -62,20 +81,25 @@ export class RecepcionRepository {
 
   async findAll(filter: RecepcionFilter) {
     const where: any = { tipo: 'ENTRADA' };
-    if (filter.folio) where.folio = { contains: filter.folio };
+
+    if (filter.folio) where.folio = { contains: filter.folio, mode: 'insensitive' };
     if (filter.estado) where.estado = filter.estado;
     if (filter.areaDestinoId) where.areaDestinoId = filter.areaDestinoId;
     if (filter.fechaInicio || filter.fechaFin) {
       where.fechaRecepcion = {};
       if (filter.fechaInicio) where.fechaRecepcion.gte = new Date(filter.fechaInicio);
-      if (filter.fechaFin) where.fechaRecepcion.lte = new Date(filter.fechaFin);
+      if (filter.fechaFin) {
+        const finDate = new Date(filter.fechaFin);
+        finDate.setHours(23, 59, 59, 999);
+        where.fechaRecepcion.lte = finDate;
+      }
     }
 
     return prisma.correspondencia.findMany({
       where,
       include: {
         areaDestino: true,
-        registradoPor: { select: { id: true, nombre: true } }
+        registradoPor: true
       },
       orderBy: { fechaRecepcion: 'desc' }
     });
@@ -86,93 +110,16 @@ export class RecepcionRepository {
       where: { id },
       include: {
         areaDestino: true,
-        registradoPor: { select: { id: true, nombre: true } },
+        registradoPor: true,
         anexos: true,
         acuses: true,
         selloDigital: true,
-        firmas: {
-          include: { firmadoPor: { select: { id: true, nombre: true } } }
-        },
+        firmas: true,
         historial: {
-          include: { usuario: { select: { id: true, nombre: true } } },
+          include: { usuario: true },
           orderBy: { createdAt: 'desc' }
         }
       }
-    });
-  }
-
-  async updateEstado(id: number, estado: string, usuarioId: number, observaciones?: string) {
-    return prisma.$transaction(async (tx) => {
-      const current = await tx.correspondencia.findUnique({ where: { id } });
-      if (!current) throw new Error('No encontrada');
-
-      const updated = await tx.correspondencia.update({
-        where: { id },
-        data: { estado: estado as any }
-      });
-
-      await tx.historialCorrespondencia.create({
-        data: {
-          correspondenciaId: id,
-          usuarioId,
-          accion: 'CAMBIO_ESTADO',
-          estadoAnterior: current.estado,
-          estadoNuevo: estado,
-          detalle: observaciones || `Estado cambiado a ${estado}`
-        }
-      });
-
-      return updated;
-    });
-  }
-
-  async generarSello(correspondenciaId: number, usuarioId: number) {
-    return prisma.$transaction(async (tx) => {
-      const correspondencia = await tx.correspondencia.findUnique({ where: { id: correspondenciaId } });
-      if(!correspondencia) throw new Error("No existe");
-
-      const codigoSello = `SELLO-${correspondencia.folio}-${Date.now()}`;
-      const sello = await tx.selloDigital.create({
-        data: {
-          correspondenciaId,
-          codigoSello,
-          cadenaOriginal: `${correspondencia.folio}|${correspondencia.fechaRecepcion}|${codigoSello}`
-        }
-      });
-
-      await tx.historialCorrespondencia.create({
-         data: {
-           correspondenciaId,
-           usuarioId,
-           accion: 'SELLO_GENERADO',
-           detalle: `Sello generado: ${codigoSello}`
-         }
-      });
-
-      return sello;
-    });
-  }
-
-  async registrarFirma(correspondenciaId: number, usuarioId: number, observaciones?: string) {
-    return prisma.$transaction(async (tx) => {
-       const firma = await tx.firmaRecepcion.create({
-         data: {
-           correspondenciaId,
-           firmadoPorId: usuarioId,
-           observaciones
-         }
-       });
-
-       await tx.historialCorrespondencia.create({
-         data: {
-           correspondenciaId,
-           usuarioId,
-           accion: 'FIRMA_RECEPCION',
-           detalle: 'Firma de recepcion interna (Ficha de Gestion) registrada'
-         }
-       });
-
-       return firma;
     });
   }
 }

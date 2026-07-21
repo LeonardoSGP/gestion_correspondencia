@@ -1,0 +1,563 @@
+
+--- PAGINA 1 ---
+TECNOLÓGICO NACIONAL DE MÉXICO
+INSTITUTO TECNOLÓGICO DE OAXACA
+INGENIERÍA EN SISTEM AS COMPUTACIONALES
+MATERIA:
+Desarrollo Web Con Enfoque Ágil
+TÍTULO:
+Lista maes tra de Historias de Usuario y
+Concentrado de Tarjetas CRC
+CATEDRÁTICO:
+Francisco Ricardo Baños Solis
+PRESENTA:
+García Pino Leonardo Sadot
+Oaxaca de Juárez, Oaxaca. 21 de julio del 2026
+
+--- PAGINA 2 ---
+I. Lista Maestra de Historias de Usuario
+A continuación, se presenta la Lista Maestra de Historias de Usuario del proyecto Sistema Institucional de Gestión de Correspondencia. El orden de la tabla
+refleja la secuencia lógica de desarrollo recomendada: en primer término, las historias correspondientes a la gestión de accesos y seguridad (HU-01 a HU-05),
+que constituyen una condición previa para el uso de cualquier otro módulo del sistema; posteriormente, las historias del módulo de Recepción de
+Correspondencia (HU-06 y HU-07); en tercer lugar, las historias de los módulos de Despacho (HU-08) y de Enrutamiento y Mensajería (HU-09); y, finalmente,
+la historia correspondiente al módulo de Archivo y Trazabilidad (HU-10), que cierra el ciclo documental de la correspondencia de salida.
+Sprint
+ID Nombre / Título Descripción breve Actor principal Módulo Prioridad Estado Dependencias Observaciones
+estimado
+Ingreso al sistema mediante
+Historia base; condición de
+usuario y contraseña para acceder Personal de la UC / Gestión de Accesos y
+HU-01 Inicio de sesión Alta Pendiente Ninguna acceso para el resto de los Sprint 1
+a los módulos correspondientes Personal de AA o UA Seguridad
+módulos del sistema.
+según el perfil.
+Solicitud de restablecimiento de
+Requiere integración con
+Recuperación de contraseña desde la pantalla de Usuario registrado en el Gestión de Accesos y
+HU-02 Media Pendiente HU-01 servicio de envío de correo Sprint 1
+contraseña de acceso inicio de sesión mediante correo sistema Seguridad
+electrónico.
+electrónico asociado.
+Captura, modificación y
+Condición previa para la
+Alta y gestión de deshabilitación de usuarios del Administrador de Gestión de Accesos y
+HU-03 Alta Pendiente HU-01 operación de todos los Sprint 1
+usuarios sistema por parte del plataforma Seguridad
+demás perfiles de usuario.
+administrador de la plataforma.
+Asignación de un rol de sistema a
+Define el modelo de control
+Asignación de roles y cada usuario para habilitar o Administrador de Gestión de Accesos y
+HU-04 Alta Pendiente HU-03 de acceso basado en roles Sprint 1
+permisos restringir el acceso a los módulos plataforma Seguridad
+(RBAC) del sistema.
+funcionales.
+Cierre manual de sesión o cierre
+Incluye mecanismo de
+automático por inactividad, para Todos los usuarios Gestión de Accesos y
+HU-05 Cierre de sesión Media Pendiente HU-01 expiración automática de Sprint 1
+proteger la confidencialidad de la activos en el sistema Seguridad
+sesión por inactividad.
+información gestionada.
+Recepción de
+Correspondencia
+Registro de Registro de correspondencia
+Personal de la Unidad
+Historia central del módulo
+correspondencia oficial entrante, generación de folio único de Recepción; genera el
+HU-06 Central de Alta Pendiente HU-01, HU-04 Sprint 2
+de entrada y emisión de seguimiento y emisión del folio que se utiliza en
+de acuse acuse de recibo.
+Correspondencia (UCC)
+historias posteriores.
+
+[TABLA 1 - Pagina 2]
+ |  |  |  |  |  |  |  |  | Sprint
+ID | Nombre / Título | Descripción breve | Actor principal | Módulo | Prioridad | Estado | Dependencias | Observaciones | 
+ |  |  |  |  |  |  |  |  | estimado
+ |  |  |  |  |  |  |  |  | 
+HU-01 | Inicio de sesión | Ingreso al sistema mediante
+usuario y contraseña para acceder
+a los módulos correspondientes
+según el perfil. | Personal de la UC /
+Personal de AA o UA | Gestión de Accesos y
+Seguridad | Alta | Pendiente | Ninguna | Historia base; condición de
+acceso para el resto de los
+módulos del sistema. | Sprint 1
+HU-02 | Recuperación de
+contraseña de acceso | Solicitud de restablecimiento de
+contraseña desde la pantalla de
+inicio de sesión mediante correo
+electrónico asociado. | Usuario registrado en el
+sistema | Gestión de Accesos y
+Seguridad | Media | Pendiente | HU-01 | Requiere integración con
+servicio de envío de correo
+electrónico. | Sprint 1
+HU-03 | Alta y gestión de
+usuarios | Captura, modificación y
+deshabilitación de usuarios del
+sistema por parte del
+administrador de la plataforma. | Administrador de
+plataforma | Gestión de Accesos y
+Seguridad | Alta | Pendiente | HU-01 | Condición previa para la
+operación de todos los
+demás perfiles de usuario. | Sprint 1
+HU-04 | Asignación de roles y
+permisos | Asignación de un rol de sistema a
+cada usuario para habilitar o
+restringir el acceso a los módulos
+funcionales. | Administrador de
+plataforma | Gestión de Accesos y
+Seguridad | Alta | Pendiente | HU-03 | Define el modelo de control
+de acceso basado en roles
+(RBAC) del sistema. | Sprint 1
+HU-05 | Cierre de sesión | Cierre manual de sesión o cierre
+automático por inactividad, para
+proteger la confidencialidad de la
+información gestionada. | Todos los usuarios
+activos en el sistema | Gestión de Accesos y
+Seguridad | Media | Pendiente | HU-01 | Incluye mecanismo de
+expiración automática de
+sesión por inactividad. | Sprint 1
+HU-06 | Registro de
+correspondencia oficial
+de entrada y emisión
+de acuse | Registro de correspondencia
+entrante, generación de folio único
+de seguimiento y emisión del
+acuse de recibo. | Personal de la Unidad
+Central de
+Correspondencia (UCC) | Recepción de
+Correspondencia | Alta | Pendiente | HU-01, HU-04 | Historia central del módulo
+de Recepción; genera el
+folio que se utiliza en
+historias posteriores. | Sprint 2
+
+--- PAGINA 3 ---
+Sprint
+ID Nombre / Título Descripción breve Actor principal Módulo Prioridad Estado Dependencias Observaciones
+estimado
+Registro de la distribución interna
+Distribución interna y Personal de la UCC / Depende de la existencia
+de correspondencia ya recibida y Recepción de
+HU-07 control de entrega a Personal de Área Alta Pendiente HU-06 previa de un folio de Sprint 2
+confirmación de entrega al área Correspondencia
+áreas receptoras Receptora entrada válido (HU-06).
+destinataria.
+Registro de Registro de correspondencia
+Historia central del módulo
+correspondencia de generada por las áreas internas, Área Remitente / Despacho de
+HU-08 Alta Pendiente HU-01, HU-04 de Despacho; precede a la Sprint 2
+salida para despacho al destinada al envío hacia el exterior Personal de la UCC Correspondencia
+asignación de ruta de envío.
+exterior de la institución.
+Asignación de ruta y Asignación de la correspondencia Depende de la existencia
+Personal de la UCC /
+método de envío de salida a una ruta y método de Enrutamiento y previa de correspondencia
+HU-09 Mensajero / Servicio Alta Pendiente HU-08 Sprint 3
+externo envío (mensajero interno, servicio Mensajería de salida registrada (HU-
+Postal
+(Mensajería/Postal) postal o paquetería). 08).
+Captura del acuse de recibo Cierra el ciclo de
+Captura, registro y
+devuelto por el destinatario Personal de la UCC / trazabilidad de la
+HU-10 archivo de acuses de Archivo y Trazabilidad Media Pendiente HU-09 Sprint 3
+externo, cierre del ciclo de vida del Área Remitente correspondencia de salida
+recibo de salida
+documento y archivo digital. iniciado en HU-08.
+
+[TABLA 1 - Pagina 3]
+ |  |  |  |  |  |  |  |  | Sprint
+ID | Nombre / Título | Descripción breve | Actor principal | Módulo | Prioridad | Estado | Dependencias | Observaciones | 
+ |  |  |  |  |  |  |  |  | estimado
+ |  |  |  |  |  |  |  |  | 
+HU-07 | Distribución interna y
+control de entrega a
+áreas receptoras | Registro de la distribución interna
+de correspondencia ya recibida y
+confirmación de entrega al área
+destinataria. | Personal de la UCC /
+Personal de Área
+Receptora | Recepción de
+Correspondencia | Alta | Pendiente | HU-06 | Depende de la existencia
+previa de un folio de
+entrada válido (HU-06). | Sprint 2
+HU-08 | Registro de
+correspondencia de
+salida para despacho al
+exterior | Registro de correspondencia
+generada por las áreas internas,
+destinada al envío hacia el exterior
+de la institución. | Área Remitente /
+Personal de la UCC | Despacho de
+Correspondencia | Alta | Pendiente | HU-01, HU-04 | Historia central del módulo
+de Despacho; precede a la
+asignación de ruta de envío. | Sprint 2
+HU-09 | Asignación de ruta y
+método de envío
+externo
+(Mensajería/Postal) | Asignación de la correspondencia
+de salida a una ruta y método de
+envío (mensajero interno, servicio
+postal o paquetería). | Personal de la UCC /
+Mensajero / Servicio
+Postal | Enrutamiento y
+Mensajería | Alta | Pendiente | HU-08 | Depende de la existencia
+previa de correspondencia
+de salida registrada (HU-
+08). | Sprint 3
+HU-10 | Captura, registro y
+archivo de acuses de
+recibo de salida | Captura del acuse de recibo
+devuelto por el destinatario
+externo, cierre del ciclo de vida del
+documento y archivo digital. | Personal de la UCC /
+Área Remitente | Archivo y Trazabilidad | Media | Pendiente | HU-09 | Cierra el ciclo de
+trazabilidad de la
+correspondencia de salida
+iniciado en HU-08. | Sprint 3
+
+--- PAGINA 4 ---
+II. Concentrado de Tarjetas CRC (Class–Responsibility–Collaboration)
+A partir del análisis orientado a objetos de las diez Historias de Usuario del proyecto, se identificaron catorce clases del dominio, las cuales se documentan a
+continuación en un concentrado consolidado de Tarjetas CRC. Cuando una misma clase participa en más de una historia de usuario, su información fue
+integrada en una sola fila, evitando duplicidades y reuniendo la totalidad de sus responsabilidades y colaboradores.
+Clase Descripción Responsabilidades Colaboradores Módulo Observaciones
+Representa a cualquier
+persona registrada en el
+Almacenar credenciales de acceso;
+sistema que puede Clase transversal,
+autenticar al usuario; mantener el Sesión, Rol,
+autenticarse y operar Gestión de Accesos y referenciada por HU-01,
+Usuario estatus Activo/Inactivo; solicitar SolicitudRecuperacionContraseña,
+conforme a su rol asignado Seguridad HU-02, HU-03, HU-04 y
+recuperación de contraseña; iniciar Administrador de Plataforma
+(personal de la UCC, personal HU-05.
+y cerrar sesión.
+de UA/AA o administrador de
+plataforma).
+Generar y validar el token de
+Representa el periodo de
+sesión; controlar el tiempo de Derivada de HU-01 (inicio
+acceso activo de un usuario Gestión de Accesos y
+Sesión inactividad; invalidar el token al Usuario de sesión) y HU-05 (cierre
+autenticado dentro del Seguridad
+cerrar sesión manual o de sesión).
+sistema.
+automáticamente.
+Representa el proceso de
+Generar un enlace o token
+restablecimiento de
+temporal de restablecimiento; Usuario, Servicio de Notificación Gestión de Accesos y
+SolicitudRecuperacionContraseña contraseña iniciado por un Derivada de HU-02.
+validar su vigencia; actualizar la por Correo Seguridad
+usuario que olvidó su clave de
+contraseña del usuario.
+acceso.
+Representa el perfil funcional
+asignado a un usuario (por
+Agrupar un conjunto de permisos;
+ejemplo, personal de Usuario, Permiso, Administrador Gestión de Accesos y
+Rol habilitar o restringir el acceso a los Derivada de HU-04.
+ventanilla, encargado de de Plataforma Seguridad
+módulos funcionales del sistema.
+mensajería o enlace de área
+receptora).
+Representa una acción o Clase de apoyo derivada
+Definir la acción o módulo
+módulo específico del sistema Gestión de Accesos y de HU-04, necesaria para
+Permiso autorizado; asociarse a uno o Rol
+al que un rol tiene Seguridad modelar el control de
+varios roles.
+autorización de acceso. acceso basado en roles.
+Representa a una Unidad
+Administrativa (UA) o Área Identificar al área generadora o Recepción de
+Entidad de dominio
+Administrativa (AA) de la receptora de correspondencia; Usuario, Correspondencia, Correspondencia /
+AreaAdministrativa compartida entre HU-06,
+institución, que actúa como asociarse a los usuarios que la DistribucionInterna Despacho de
+HU-07 y HU-08.
+remitente o receptora de integran. Correspondencia
+correspondencia.
+
+[TABLA 1 - Pagina 4]
+Clase | Descripción | Responsabilidades | Colaboradores | Módulo | Observaciones
+Usuario | Representa a cualquier
+persona registrada en el
+sistema que puede
+autenticarse y operar
+conforme a su rol asignado
+(personal de la UCC, personal
+de UA/AA o administrador de
+plataforma). | Almacenar credenciales de acceso;
+autenticar al usuario; mantener el
+estatus Activo/Inactivo; solicitar
+recuperación de contraseña; iniciar
+y cerrar sesión. | Sesión, Rol,
+SolicitudRecuperacionContraseña,
+Administrador de Plataforma | Gestión de Accesos y
+Seguridad | Clase transversal,
+referenciada por HU-01,
+HU-02, HU-03, HU-04 y
+HU-05.
+Sesión | Representa el periodo de
+acceso activo de un usuario
+autenticado dentro del
+sistema. | Generar y validar el token de
+sesión; controlar el tiempo de
+inactividad; invalidar el token al
+cerrar sesión manual o
+automáticamente. | Usuario | Gestión de Accesos y
+Seguridad | Derivada de HU-01 (inicio
+de sesión) y HU-05 (cierre
+de sesión).
+SolicitudRecuperacionContraseña | Representa el proceso de
+restablecimiento de
+contraseña iniciado por un
+usuario que olvidó su clave de
+acceso. | Generar un enlace o token
+temporal de restablecimiento;
+validar su vigencia; actualizar la
+contraseña del usuario. | Usuario, Servicio de Notificación
+por Correo | Gestión de Accesos y
+Seguridad | Derivada de HU-02.
+Rol | Representa el perfil funcional
+asignado a un usuario (por
+ejemplo, personal de
+ventanilla, encargado de
+mensajería o enlace de área
+receptora). | Agrupar un conjunto de permisos;
+habilitar o restringir el acceso a los
+módulos funcionales del sistema. | Usuario, Permiso, Administrador
+de Plataforma | Gestión de Accesos y
+Seguridad | Derivada de HU-04.
+Permiso | Representa una acción o
+módulo específico del sistema
+al que un rol tiene
+autorización de acceso. | Definir la acción o módulo
+autorizado; asociarse a uno o
+varios roles. | Rol | Gestión de Accesos y
+Seguridad | Clase de apoyo derivada
+de HU-04, necesaria para
+modelar el control de
+acceso basado en roles.
+AreaAdministrativa | Representa a una Unidad
+Administrativa (UA) o Área
+Administrativa (AA) de la
+institución, que actúa como
+remitente o receptora de
+correspondencia. | Identificar al área generadora o
+receptora de correspondencia;
+asociarse a los usuarios que la
+integran. | Usuario, Correspondencia,
+DistribucionInterna | Recepción de
+Correspondencia /
+Despacho de
+Correspondencia | Entidad de dominio
+compartida entre HU-06,
+HU-07 y HU-08.
+
+--- PAGINA 5 ---
+Clase Descripción Responsabilidades Colaboradores Módulo Observaciones
+Almacenar los datos del remitente
+Clase central del dominio;
+y del destinatario; registrar tipo Consolida la información
+representa una pieza Recepción de
+(entrada/salida), prioridad y Folio, Acuse, AreaAdministrativa, derivada de HU-06 y HU-
+documental oficial gestionada Correspondencia /
+Correspondencia estatus; asociarse a un folio único; DistribucionInterna, Ruta, 08; representa tanto la
+por la Unidad Central de Despacho de
+actualizar su estatus a lo largo de Expediente correspondencia de
+Correspondencia (UCC), ya Correspondencia
+su ciclo de vida (registrada, entrada como la de salida.
+sea de entrada o de salida.
+entregada, en tránsito, cerrada).
+Representa el identificador Generar un número de folio
+único y progresivo asignado a secuencial; asociarse de manera
+Recepción de
+Folio cada pieza de única a una correspondencia; servir Correspondencia Derivada de HU-06.
+Correspondencia
+correspondencia registrada como referencia de consulta y
+en el sistema. trazabilidad.
+Representa el comprobante
+Registrar el sello digital, la fecha y
+de recepción o entrega de
+hora de recepción o entrega;
+una pieza de Correspondencia, Recepción de
+vincularse a la correspondencia Clase compartida entre
+Acuse correspondencia, ya sea en su DistribucionInterna, Mensajero, Correspondencia /
+correspondiente; servir como HU-06, HU-07 y HU-10.
+registro de entrada, su Expediente Archivo y Trazabilidad
+evidencia para el cierre del ciclo
+distribución interna o su envío
+documental.
+al exterior.
+Representa el proceso de
+Registrar la entrega interna de la
+entrega de una pieza de
+correspondencia; actualizar el
+correspondencia de entrada Correspondencia, Recepción de
+DistribucionInterna estatus a "Entregado a Área"; Derivada de HU-07.
+al área receptora AreaAdministrativa, Acuse Correspondencia
+recabar la firma o acuse de
+correspondiente dentro de la
+recepción del área receptora.
+institución.
+Determinar el destino (local,
+Representa la asignación
+nacional o internacional); asociarse
+logística de una pieza de
+a un método de envío; asignarse a Correspondencia, MetodoEnvio, Enrutamiento y
+Ruta correspondencia de salida a Derivada de HU-09.
+un mensajero o servicio externo; Mensajero Mensajería
+un destino y método de
+actualizar el estatus de la
+traslado específico.
+correspondencia a "En Tránsito".
+Representa la modalidad de
+traslado físico de la Clasificar el tipo de envío
+correspondencia de salida disponible; asociarse a la ruta Enrutamiento y
+MetodoEnvio Ruta, Correspondencia Derivada de HU-09.
+(mensajería interna, servicio asignada; registrar el número de Mensajería
+postal o paquetería guía cuando aplique.
+especializada).
+Representa al personal de
+Derivada de HU-09; puede
+mensajería interna o al Recibir la correspondencia y la ruta
+representar tanto a
+servicio postal/paquetería asignada; efectuar la entrega al Enrutamiento y
+Mensajero Ruta, Correspondencia, Acuse personal interno como a
+externo responsable del destinatario externo; recabar el Mensajería
+terceros (Correos de
+traslado físico de la acuse de recibo correspondiente.
+México, paquetería).
+correspondencia.
+
+[TABLA 1 - Pagina 5]
+Clase | Descripción | Responsabilidades | Colaboradores | Módulo | Observaciones
+Correspondencia | Clase central del dominio;
+representa una pieza
+documental oficial gestionada
+por la Unidad Central de
+Correspondencia (UCC), ya
+sea de entrada o de salida. | Almacenar los datos del remitente
+y del destinatario; registrar tipo
+(entrada/salida), prioridad y
+estatus; asociarse a un folio único;
+actualizar su estatus a lo largo de
+su ciclo de vida (registrada,
+entregada, en tránsito, cerrada). | Folio, Acuse, AreaAdministrativa,
+DistribucionInterna, Ruta,
+Expediente | Recepción de
+Correspondencia /
+Despacho de
+Correspondencia | Consolida la información
+derivada de HU-06 y HU-
+08; representa tanto la
+correspondencia de
+entrada como la de salida.
+Folio | Representa el identificador
+único y progresivo asignado a
+cada pieza de
+correspondencia registrada
+en el sistema. | Generar un número de folio
+secuencial; asociarse de manera
+única a una correspondencia; servir
+como referencia de consulta y
+trazabilidad. | Correspondencia | Recepción de
+Correspondencia | Derivada de HU-06.
+Acuse | Representa el comprobante
+de recepción o entrega de
+una pieza de
+correspondencia, ya sea en su
+registro de entrada, su
+distribución interna o su envío
+al exterior. | Registrar el sello digital, la fecha y
+hora de recepción o entrega;
+vincularse a la correspondencia
+correspondiente; servir como
+evidencia para el cierre del ciclo
+documental. | Correspondencia,
+DistribucionInterna, Mensajero,
+Expediente | Recepción de
+Correspondencia /
+Archivo y Trazabilidad | Clase compartida entre
+HU-06, HU-07 y HU-10.
+DistribucionInterna | Representa el proceso de
+entrega de una pieza de
+correspondencia de entrada
+al área receptora
+correspondiente dentro de la
+institución. | Registrar la entrega interna de la
+correspondencia; actualizar el
+estatus a "Entregado a Área";
+recabar la firma o acuse de
+recepción del área receptora. | Correspondencia,
+AreaAdministrativa, Acuse | Recepción de
+Correspondencia | Derivada de HU-07.
+Ruta | Representa la asignación
+logística de una pieza de
+correspondencia de salida a
+un destino y método de
+traslado específico. | Determinar el destino (local,
+nacional o internacional); asociarse
+a un método de envío; asignarse a
+un mensajero o servicio externo;
+actualizar el estatus de la
+correspondencia a "En Tránsito". | Correspondencia, MetodoEnvio,
+Mensajero | Enrutamiento y
+Mensajería | Derivada de HU-09.
+MetodoEnvio | Representa la modalidad de
+traslado físico de la
+correspondencia de salida
+(mensajería interna, servicio
+postal o paquetería
+especializada). | Clasificar el tipo de envío
+disponible; asociarse a la ruta
+asignada; registrar el número de
+guía cuando aplique. | Ruta, Correspondencia | Enrutamiento y
+Mensajería | Derivada de HU-09.
+Mensajero | Representa al personal de
+mensajería interna o al
+servicio postal/paquetería
+externo responsable del
+traslado físico de la
+correspondencia. | Recibir la correspondencia y la ruta
+asignada; efectuar la entrega al
+destinatario externo; recabar el
+acuse de recibo correspondiente. | Ruta, Correspondencia, Acuse | Enrutamiento y
+Mensajería | Derivada de HU-09; puede
+representar tanto a
+personal interno como a
+terceros (Correos de
+México, paquetería).
+
+--- PAGINA 6 ---
+Clase Descripción Responsabilidades Colaboradores Módulo Observaciones
+Representa el archivo digital
+Almacenar el acuse digitalizado;
+que resguarda la evidencia
+cerrar el ciclo de vida del Derivada de HU-10;
+documental de una Correspondencia, Acuse,
+Expediente documento; notificar al área Archivo y Trazabilidad representa el cierre formal
+correspondencia de salida ya AreaAdministrativa
+generadora la conclusión del del ciclo de trazabilidad.
+concluida, incluyendo el acuse
+trámite.
+de recibo digitalizado.
+
+[TABLA 1 - Pagina 6]
+Clase | Descripción | Responsabilidades | Colaboradores | Módulo | Observaciones
+Expediente | Representa el archivo digital
+que resguarda la evidencia
+documental de una
+correspondencia de salida ya
+concluida, incluyendo el acuse
+de recibo digitalizado. | Almacenar el acuse digitalizado;
+cerrar el ciclo de vida del
+documento; notificar al área
+generadora la conclusión del
+trámite. | Correspondencia, Acuse,
+AreaAdministrativa | Archivo y Trazabilidad | Derivada de HU-10;
+representa el cierre formal
+del ciclo de trazabilidad.

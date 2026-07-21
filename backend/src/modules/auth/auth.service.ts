@@ -1,107 +1,89 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { config } from '../../config';
 import { AppError } from '../../errors';
-import { AuthRepository } from './auth.repository';
-import { RegisterInput, LoginInput, TokenPayload } from './auth.types';
+import { authRepository } from './auth.repository';
+import { enviarCorreo } from '../../services/email.service';
+import { LoginInput, RestablecerContrasenaInput } from './auth.types';
 
-const authRepo = new AuthRepository();
-
-export class AuthService {
-  // -- Registro de usuario --
-  async register(input: RegisterInput) {
-    const exists = await authRepo.emailExists(input.email);
-    if (exists) {
-      throw new AppError(409, 'El email ya esta registrado');
+export const authService = {
+  login: async (input: LoginInput, ipAddress: string, userAgent: string) => {
+    const user = await authRepository.findUserByEmail(input.email);
+    if (!user || !user.activo) {
+      throw new AppError('Credenciales inválidas o usuario inactivo', 401);
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, 10);
+    const isMatch = await bcrypt.compare(input.password, user.password);
+    if (!isMatch) {
+      throw new AppError('Credenciales inválidas o usuario inactivo', 401);
+    }
 
-    const user = await authRepo.createUser({
-      nombre: input.nombre,
-      email: input.email,
-      password: hashedPassword,
-      role: input.role,
-      areaId: input.areaId,
-    });
+    const payload = {
+      id: user.id,
+      email: user.email,
+      rolNombre: user.rol?.nombre || '',
+    };
 
-    const tokens = this.generateTokens({ id: user.id, email: user.email, role: user.role });
+    const accessToken = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
+    const refreshToken = jwt.sign(payload, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiresIn as any });
+
+    const decoded = jwt.decode(accessToken) as jwt.JwtPayload;
+    const fechaExpiracion = new Date((decoded.exp || 0) * 1000);
+
+    await authRepository.createSesion(user.id, accessToken, ipAddress, userAgent, fechaExpiracion);
+
+    const { password, ...userWithoutPassword } = user as any;
 
     return {
-      user: this.sanitizeUser(user),
-      ...tokens,
+      user: userWithoutPassword,
+      accessToken,
+      refreshToken
     };
-  }
+  },
 
-  // -- Login --
-  async login(input: LoginInput) {
-    const user = await authRepo.findUserByEmail(input.email);
+  logout: async (token: string) => {
+    await authRepository.invalidarSesion(token);
+  },
+
+  recuperarContrasena: async (email: string) => {
+    const user = await authRepository.findUserByEmail(email);
     if (!user) {
-      throw new AppError(401, 'Credenciales invalidas');
+      return;
     }
 
-    if (!user.activo) {
-      throw new AppError(403, 'La cuenta esta desactivada. Contacta al administrador');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await authRepository.crearSolicitudRecuperacion(user.id, token, expires);
+
+    const resetLink = `${config.frontendUrl}/reset-password?token=${token}`;
+    const html = `<p>Has solicitado restablecer tu contraseña. Haz clic en el enlace de abajo:</p>
+                  <p><a href="${resetLink}">Restablecer contraseña</a></p>
+                  <p>Este enlace expirará en 1 hora.</p>`;
+    
+    await enviarCorreo(email, 'Recuperación de contraseña', html);
+  },
+
+  restablecerContrasena: async (input: RestablecerContrasenaInput) => {
+    const solicitud = await authRepository.findSolicitudByToken(input.token);
+    if (!solicitud || solicitud.usado || new Date() > solicitud.fechaExpiracion) {
+      throw new AppError('El token es inválido o ha expirado', 400);
     }
 
-    const validPassword = await bcrypt.compare(input.password, user.password);
-    if (!validPassword) {
-      throw new AppError(401, 'Credenciales invalidas');
-    }
+    const hashedPassword = await bcrypt.hash(input.nuevaContrasena, 10);
+    await authRepository.updatePassword(parseInt(solicitud.userId as any), hashedPassword);
+    await authRepository.marcarSolicitudUsada(parseInt(solicitud.id as any));
+    
+    await authRepository.invalidarTodasSesiones(parseInt(solicitud.userId as any));
+  },
 
-    const tokens = this.generateTokens({ id: user.id, email: user.email, role: user.role });
-
-    return {
-      user: this.sanitizeUser(user),
-      ...tokens,
-    };
-  }
-
-  // -- Refresh token --
-  async refreshToken(refreshToken: string) {
-    try {
-      const decoded = jwt.verify(refreshToken, config.jwtRefreshSecret) as TokenPayload;
-      const user = await authRepo.findUserById(decoded.id);
-
-      if (!user || !user.activo) {
-        throw new AppError(401, 'Token invalido o usuario desactivado');
-      }
-
-      const tokens = this.generateTokens({ id: user.id, email: user.email, role: user.role });
-
-      return {
-        user: this.sanitizeUser(user),
-        ...tokens,
-      };
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-      throw new AppError(401, 'Refresh token invalido o expirado');
-    }
-  }
-
-  // -- Obtener perfil del usuario autenticado --
-  async getProfile(userId: number) {
-    const user = await authRepo.findUserById(userId);
+  getProfile: async (userId: string | number) => {
+    const user = await authRepository.findUserById(typeof userId === 'string' ? parseInt(userId) : userId);
     if (!user) {
-      throw new AppError(404, 'Usuario no encontrado');
+      throw new AppError('Usuario no encontrado', 404);
     }
-    return this.sanitizeUser(user);
+    const { password, ...userWithoutPassword } = user as any;
+    return userWithoutPassword;
   }
-
-  // -- Helpers privados --
-
-  private generateTokens(payload: TokenPayload) {
-    const accessToken = jwt.sign(payload, config.jwtSecret, {
-      expiresIn: config.jwtExpiresIn as any,
-    });
-    const refreshToken = jwt.sign(payload, config.jwtRefreshSecret, {
-      expiresIn: config.jwtRefreshExpiresIn as any,
-    });
-    return { accessToken, refreshToken };
-  }
-
-  private sanitizeUser(user: any) {
-    const { password, ...rest } = user;
-    return rest;
-  }
-}
+};

@@ -1,41 +1,77 @@
 import prisma from '../../prisma.config';
 
-export class AuthRepository {
-  async findUserByEmail(email: string) {
+export const authRepository = {
+  findUserByEmail: async (email: string) => {
     return prisma.user.findUnique({
       where: { email },
-      include: { area: true },
+      include: { rol: true },
     });
-  }
+  },
 
-  async findUserById(id: number) {
+  findUserById: async (id: number) => {
     return prisma.user.findUnique({
       where: { id },
-      include: { area: true },
+      include: { rol: true, area: true },
     });
-  }
+  },
 
-  async createUser(data: {
-    nombre: string;
-    email: string;
-    password: string;
-    role?: 'ADMIN' | 'OPERADOR_UCC' | 'MENSAJERO' | 'AREA_ADMINISTRATIVA';
-    areaId?: number;
-  }) {
-    return prisma.user.create({
+  createSesion: async (userId: number, token: string, ipAddress: string, userAgent: string, fechaExpiracion: Date) => {
+    return prisma.sesion.create({
       data: {
-        nombre: data.nombre,
-        email: data.email,
-        password: data.password,
-        role: data.role || 'OPERADOR_UCC',
-        areaId: data.areaId || null,
+        userId,
+        token,
+        ipAddress,
+        userAgent,
+        fechaExpiracion,
+        activa: true,
+        ultimaActividad: new Date(),
       },
-      include: { area: true },
+    });
+  },
+
+  invalidarSesion: async (token: string) => {
+    return prisma.sesion.updateMany({
+      where: { token, activa: true },
+      data: { activa: false },
+    });
+  },
+
+  invalidarTodasSesiones: async (userId: number) => {
+    return prisma.sesion.updateMany({
+      where: { userId, activa: true },
+      data: { activa: false },
+    });
+  },
+
+  crearSolicitudRecuperacion: async (userId: number, token: string, fechaExpiracion: Date) => {
+    return prisma.solicitudRecuperacion.create({
+      data: {
+        userId,
+        token,
+        fechaExpiracion,
+        usado: false,
+      },
+    });
+  },
+
+  findSolicitudByToken: async (token: string) => {
+    return prisma.solicitudRecuperacion.findUnique({
+      where: { token },
+      include: { usuario: true },
+    });
+  },
+
+  marcarSolicitudUsada: async (id: number) => {
+    return prisma.solicitudRecuperacion.update({
+      where: { id },
+      data: { usado: true },
+    });
+  },
+
+  updatePassword: async (userId: number, password: string) => {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { password },
     });
   }
-
-  async emailExists(email: string): Promise<boolean> {
-    const count = await prisma.user.count({ where: { email } });
-    return count > 0;
-  }
-}
+};

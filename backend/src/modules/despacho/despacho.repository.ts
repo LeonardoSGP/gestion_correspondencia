@@ -1,57 +1,59 @@
 import prisma from '../../prisma.config';
 import { CreateDespachoInput, DespachoFilter } from './despacho.types';
+import { Prisma } from '@prisma/client';
 
 export class DespachoRepository {
   async generateFolio(): Promise<string> {
-    const today = new Date();
-    const year = today.getFullYear();
+    const year = new Date().getFullYear();
+    const startOfYear = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endOfYear = new Date(`${year}-12-31T23:59:59.999Z`);
+
     const count = await prisma.correspondencia.count({
       where: {
+        tipo: 'SALIDA',
         createdAt: {
-          gte: new Date(year, 0, 1),
-          lt: new Date(year + 1, 0, 1)
+          gte: startOfYear,
+          lte: endOfYear
         }
       }
     });
-    return `INT-${year}-${(count + 1).toString().padStart(5, '0')}`;
+
+    const number = (count + 1).toString().padStart(5, '0');
+    return `SAL-${year}-${number}`;
   }
 
   async create(data: CreateDespachoInput, registradoPorId: number) {
-    const folio = await this.generateFolio();
-    
-    return prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx) => {
+      const folio = await this.generateFolio();
+
       const correspondencia = await tx.correspondencia.create({
         data: {
           folio,
           tipo: 'SALIDA',
-          estado: 'EN_REVISION', // (F6) Entra en revision para validacion de firmas/anexos
+          estado: 'REGISTRADA',
           asunto: data.asunto,
           descripcion: data.descripcion,
           numDocumento: data.numDocumento,
-          fechaDocumento: data.fechaDocumento ? new Date(data.fechaDocumento) : null,
+          fechaDocumento: data.fechaDocumento,
           cantidadAnexos: data.cantidadAnexos || 0,
           observaciones: data.observaciones,
-          prioridad: data.prioridad || 'ORDINARIA',
-          clasificacion: data.clasificacion || 'NORMAL',
+          prioridad: data.prioridad as any || 'NORMAL',
+          clasificacion: data.clasificacion as any || 'ORDINARIA',
           destinatario: data.destinatario,
           cargoDestinatario: data.cargoDestinatario,
           instDestinatario: data.instDestinatario,
           areaOrigenId: data.areaOrigenId,
           registradoPorId,
-        },
-        include: {
-          areaOrigen: true,
-          registradoPor: { select: { id: true, nombre: true } }
         }
       });
 
       await tx.historialCorrespondencia.create({
         data: {
           correspondenciaId: correspondencia.id,
+          estadoNuevo: 'REGISTRADA',
+          accion: 'REGISTRO_DESPACHO_SALIDA',
+          observacion: 'Registro inicial de correspondencia de salida',
           usuarioId: registradoPorId,
-          accion: 'SOLICITUD_DESPACHO',
-          estadoNuevo: 'EN_REVISION',
-          detalle: 'Solicitud de despacho creada. Pendiente de validacion.'
         }
       });
 
@@ -60,102 +62,41 @@ export class DespachoRepository {
   }
 
   async findAll(filter: DespachoFilter) {
-    const where: any = { tipo: 'SALIDA' };
+    const where: Prisma.CorrespondenciaWhereInput = {
+      tipo: 'SALIDA',
+    };
+
     if (filter.folio) where.folio = { contains: filter.folio };
-    if (filter.estado) where.estado = filter.estado;
+    if (filter.estado) where.estado = filter.estado as any;
     if (filter.areaOrigenId) where.areaOrigenId = filter.areaOrigenId;
+    
     if (filter.fechaInicio || filter.fechaFin) {
       where.createdAt = {};
       if (filter.fechaInicio) where.createdAt.gte = new Date(filter.fechaInicio);
       if (filter.fechaFin) where.createdAt.lte = new Date(filter.fechaFin);
     }
 
-    return prisma.correspondencia.findMany({
+    return await prisma.correspondencia.findMany({
       where,
       include: {
         areaOrigen: true,
-        registradoPor: { select: { id: true, nombre: true } }
+        registradoPor: true
       },
       orderBy: { createdAt: 'desc' }
     });
   }
 
   async findById(id: number) {
-    return prisma.correspondencia.findUnique({
+    return await prisma.correspondencia.findUnique({
       where: { id },
       include: {
         areaOrigen: true,
-        registradoPor: { select: { id: true, nombre: true } },
-        anexos: true,
-        acuses: true,
-        asignaciones: {
-          include: { mensajero: { select: { id: true, nombre: true } } }
-        },
+        registradoPor: true,
         historial: {
-          include: { usuario: { select: { id: true, nombre: true } } },
+          include: { usuario: true },
           orderBy: { createdAt: 'desc' }
         }
       }
-    });
-  }
-
-  async updateEstado(id: number, estado: string, usuarioId: number, observaciones?: string) {
-    return prisma.$transaction(async (tx) => {
-      const current = await tx.correspondencia.findUnique({ where: { id } });
-      if (!current) throw new Error('No encontrada');
-
-      const updated = await tx.correspondencia.update({
-        where: { id },
-        data: { 
-          estado: estado as any,
-          fechaDespacho: estado === 'EN_RUTA' ? new Date() : current.fechaDespacho
-        }
-      });
-
-      await tx.historialCorrespondencia.create({
-        data: {
-          correspondenciaId: id,
-          usuarioId,
-          accion: 'VALIDACION_SALIDA',
-          estadoAnterior: current.estado,
-          estadoNuevo: estado,
-          detalle: observaciones || `Estado cambiado a ${estado}`
-        }
-      });
-
-      return updated;
-    });
-  }
-
-  async asignar(id: number, usuarioId: number, data: any) {
-    return prisma.$transaction(async (tx) => {
-      const asignacion = await tx.asignacionMensajeria.create({
-        data: {
-          correspondenciaId: id,
-          mensajeroId: data.mensajeroId,
-          alcance: data.alcance || 'LOCAL',
-          proveedorPaqueteria: data.proveedorPaqueteria,
-          numeroGuia: data.numeroGuia,
-          observaciones: data.observaciones
-        }
-      });
-
-      await tx.correspondencia.update({
-        where: { id },
-        data: { estado: 'EN_RUTA', fechaDespacho: new Date() }
-      });
-
-      await tx.historialCorrespondencia.create({
-        data: {
-          correspondenciaId: id,
-          usuarioId,
-          accion: 'ASIGNACION_MENSAJERIA',
-          estadoNuevo: 'EN_RUTA',
-          detalle: `Asignado a mensajero ID: ${data.mensajeroId}. Guia: ${data.numeroGuia || 'N/A'}`
-        }
-      });
-
-      return asignacion;
     });
   }
 }

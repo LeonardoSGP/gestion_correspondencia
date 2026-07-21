@@ -1,36 +1,28 @@
-// Tipos de autenticacion
-
-export interface RegisterInput {
-  nombre: string;
-  email: string;
-  password: string;
-  role?: 'ADMIN' | 'OPERADOR_UCC' | 'MENSAJERO' | 'AREA_ADMINISTRATIVA';
-  areaId?: number;
-}
-
 export interface LoginInput {
   email: string;
   password: string;
 }
 
+export interface RegisterInput {
+  email: string;
+  contrasena: string;
+  nombre: string;
+  apellidos: string;
+  rolId: number;
+  areaId?: number;
+}
+
 export interface TokenPayload {
   id: number;
   email: string;
-  role: string;
+  rolNombre: string;
 }
 
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    user: {
-      id: number;
-      nombre: string;
-      email: string;
-      role: string;
-      area?: { id: number; nombre: string; clave: string } | null;
-    };
-    accessToken: string;
-    refreshToken: string;
-  };
+export interface RecuperarContrasenaInput {
+  email: string;
+}
+
+export interface RestablecerContrasenaInput {
+  token: string;
+  nuevaContrasena: string;
 }

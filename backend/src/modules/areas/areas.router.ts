@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { AreasService } from './areas.service';
 import { createAreaSchema, updateAreaSchema } from './areas.schema';
-import { authMiddleware } from '../../middlewares/auth.middleware';
+import { authMiddleware, AuthRequest } from '../../middlewares/auth.middleware';
 import { requireRole } from '../../middlewares/role.middleware';
 
 const router = Router();

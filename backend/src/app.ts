@@ -6,15 +6,17 @@ import path from 'path';
 
 import { errorMiddleware } from './middlewares/error.middleware';
 import { config } from './config';
+import { authMiddleware } from './middlewares/auth.middleware';
 
-// Importar routers de módulos
+// Importar routers de modulos
 import { authRouter } from './modules/auth/auth.router';
+import { usuariosRouter } from './modules/usuarios/usuarios.router';
 import { areasRouter } from './modules/areas/areas.router';
 import { recepcionRouter } from './modules/recepcion/recepcion.router';
+import { distribucionRouter } from './modules/distribucion/distribucion.router';
 import { despachoRouter } from './modules/despacho/despacho.router';
-import { mensajeriaRouter } from './modules/mensajeria/mensajeria.router';
+import { enrutamientoRouter } from './modules/enrutamiento/enrutamiento.router';
 import { archivoRouter } from './modules/archivo/archivo.router';
-import { authMiddleware } from './middlewares/auth.middleware';
 
 const app: Application = express();
 
@@ -24,9 +26,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Gestión de Correspondencia API',
+      title: 'Gestion de Correspondencia API',
       version: '1.0.0',
-      description: 'API REST — Sistema Institucional de Gestión de Correspondencia',
+      description: 'API REST -- Sistema Institucional de Gestion de Correspondencia',
     },
     servers: [{ url: `http://localhost:${config.port}` }],
     components: {
@@ -58,13 +60,13 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Archivos estáticos (uploads)
+// Archivos estaticos (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Health check
 app.get('/', (_req, res) => {
   res.json({
-    message: 'API del Sistema de Gestión de Correspondencia funcionando',
+    message: 'API del Sistema de Gestion de Correspondencia funcionando',
     version: '1.0.0',
     docs: '/api-docs',
   });
@@ -74,18 +76,28 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// ── Rutas ──────────────────────────────────────────────────────────────────
+// -- Rutas ------------------------------------------------------------------
+// HU-01, HU-02, HU-05: Autenticacion
 app.use('/api/auth', authRouter);
+// HU-03, HU-04: Gestion de usuarios, roles y permisos
+app.use('/api/usuarios', usuariosRouter);
+// Soporte transversal: Areas administrativas
 app.use('/api/areas', areasRouter);
-app.use('/api/recepcion', authMiddleware, recepcionRouter);
-app.use('/api/despacho', authMiddleware, despachoRouter);
-app.use('/api/mensajeria', authMiddleware, mensajeriaRouter);
-app.use('/api/archivo', authMiddleware, archivoRouter);
+// HU-06: Recepcion de correspondencia de entrada
+app.use('/api/recepcion', recepcionRouter);
+// HU-07: Distribucion interna
+app.use('/api/distribucion', distribucionRouter);
+// HU-08: Despacho de correspondencia de salida
+app.use('/api/despacho', despachoRouter);
+// HU-09: Enrutamiento y mensajeria
+app.use('/api/enrutamiento', enrutamientoRouter);
+// HU-10: Archivo y trazabilidad
+app.use('/api/archivo', archivoRouter);
 
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Error handler global (debe ser el último middleware)
+// Error handler global (debe ser el ultimo middleware)
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   errorMiddleware(err, req, res, next);
 });

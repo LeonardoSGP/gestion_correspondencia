@@ -1,71 +1,62 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { AuthService } from './auth.service';
-import { registerSchema, loginSchema, refreshTokenSchema } from './auth.schema';
+import { Router, RequestHandler } from 'express';
+import { authService } from './auth.service';
+import { loginSchema, recuperarContrasenaSchema, restablecerContrasenaSchema } from './auth.schema';
 import { authMiddleware, AuthRequest } from '../../middlewares/auth.middleware';
 
 const router = Router();
-const authService = new AuthService();
 
-// POST /api/auth/register
-router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', (async (req, res, next) => {
   try {
-    const validated = registerSchema.parse(req.body);
-    const result = await authService.register(validated);
-
-    res.status(201).json({
-      success: true,
-      message: 'Usuario registrado correctamente',
-      data: result,
-    });
+    const data = loginSchema.parse(req.body);
+    const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const result = await authService.login(data, ipAddress, userAgent);
+    res.json(result);
   } catch (error) {
     next(error);
   }
-});
+}) as RequestHandler);
 
-// POST /api/auth/login
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/logout', authMiddleware, (async (req: AuthRequest, res, next) => {
   try {
-    const validated = loginSchema.parse(req.body);
-    const result = await authService.login(validated);
-
-    res.json({
-      success: true,
-      message: 'Login exitoso',
-      data: result,
-    });
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      await authService.logout(token);
+    }
+    res.json({ message: 'Logout exitoso' });
   } catch (error) {
     next(error);
   }
-});
+}) as RequestHandler);
 
-// POST /api/auth/refresh-token
-router.post('/refresh-token', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/recuperar-contrasena', (async (req, res, next) => {
   try {
-    const { refreshToken } = refreshTokenSchema.parse(req.body);
-    const result = await authService.refreshToken(refreshToken);
-
-    res.json({
-      success: true,
-      message: 'Token renovado',
-      data: result,
-    });
+    const { email } = recuperarContrasenaSchema.parse(req.body);
+    await authService.recuperarContrasena(email);
+    res.json({ message: 'Si el correo existe, se han enviado las instrucciones.' });
   } catch (error) {
     next(error);
   }
-});
+}) as RequestHandler);
 
-// GET /api/auth/profile (requiere autenticacion)
-router.get('/profile', authMiddleware, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/restablecer-contrasena', (async (req, res, next) => {
   try {
-    const user = await authService.getProfile(req.user.id);
-
-    res.json({
-      success: true,
-      data: user,
-    });
+    const data = restablecerContrasenaSchema.parse(req.body);
+    await authService.restablecerContrasena(data);
+    res.json({ message: 'Contraseña restablecida exitosamente.' });
   } catch (error) {
     next(error);
   }
-});
+}) as RequestHandler);
+
+router.get('/profile', authMiddleware, (async (req: AuthRequest, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const profile = await authService.getProfile(userId);
+    res.json(profile);
+  } catch (error) {
+    next(error);
+  }
+}) as RequestHandler);
 
 export { router as authRouter };

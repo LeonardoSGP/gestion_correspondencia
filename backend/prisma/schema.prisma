@@ -1,12 +1,23 @@
 // =============================================================================
 // Prisma Schema -- Sistema de Gestion de Correspondencia
+// Alineado con el PDF: Lista Maestra de HU y Tarjetas CRC
 // =============================================================================
 //
-// Modulos:
-//   1. Recepcion (Entrada)     -- F1, F2, F3, F4
-//   2. Despacho (Salida)       -- F5, F6, F7, F8
-//   3. Enrutamiento/Mensajeria -- Rutas, asignaciones, guias
-//   4. Archivo y Trazabilidad  -- Folios, acuses, historial
+// Clases CRC -> Modelos Prisma:
+//   Usuario                          -> User
+//   Sesion                           -> Sesion
+//   SolicitudRecuperacionContrasena  -> SolicitudRecuperacion
+//   Rol                              -> Rol
+//   Permiso                          -> Permiso
+//   AreaAdministrativa               -> AreaAdministrativa
+//   Correspondencia                  -> Correspondencia
+//   Folio                            -> campo en Correspondencia
+//   Acuse                            -> Acuse
+//   DistribucionInterna              -> DistribucionInterna
+//   Ruta                             -> Ruta
+//   MetodoEnvio                      -> MetodoEnvio
+//   Mensajero                        -> User con rol Mensajero
+//   Expediente                       -> Expediente
 //
 // =============================================================================
 
@@ -20,65 +31,150 @@ datasource db {
 }
 
 // =============================================================================
-// USUARIOS Y ROLES
+// ROLES Y PERMISOS (HU-04 -- RBAC basado en tablas, segun Tarjetas CRC)
 // =============================================================================
 
-enum Role {
-  ADMIN                // Administrador del sistema
-  OPERADOR_UCC         // Operador de la Unidad Central de Correspondencia
-  MENSAJERO            // Personal de mensajeria interna/externa
-  AREA_ADMINISTRATIVA  // Usuario de un area administrativa (UA/AA)
+model Rol {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(50)
+  descripcion String?  @db.VarChar(255)
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  usuarios    User[]
+  permisos    RolPermiso[]
+
+  @@map("roles")
 }
+
+model Permiso {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(100)
+  modulo      String   @db.VarChar(100) // Nombre del modulo funcional
+  descripcion String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  roles       RolPermiso[]
+
+  @@map("permisos")
+}
+
+model RolPermiso {
+  rolId     Int @map("rol_id")
+  permisoId Int @map("permiso_id")
+
+  rol     Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+  @@map("roles_permisos")
+}
+
+// =============================================================================
+// USUARIOS (HU-01, HU-03 -- Tarjeta CRC: Usuario)
+// =============================================================================
 
 model User {
   id        Int      @id @default(autoincrement())
   nombre    String   @db.VarChar(150)
   email     String   @unique @db.VarChar(255)
   password  String   @db.VarChar(255)
-  role      Role     @default(OPERADOR_UCC)
+  rolId     Int      @map("rol_id")
   activo    Boolean  @default(true)
   areaId    Int?     @map("area_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relaciones
-  area                   AreaAdministrativa?      @relation(fields: [areaId], references: [id])
-  correspondenciasRegistradas Correspondencia[]   @relation("RegistradaPor")
-  asignacionesMensajero  AsignacionMensajeria[]   @relation("Mensajero")
-  firmasRecepcion        FirmaRecepcion[]
-  historialAcciones      HistorialCorrespondencia[]
+  rol                        Rol                          @relation(fields: [rolId], references: [id])
+  area                       AreaAdministrativa?           @relation(fields: [areaId], references: [id])
+  sesiones                   Sesion[]
+  solicitudesRecuperacion    SolicitudRecuperacion[]
+  correspondenciasRegistradas Correspondencia[]           @relation("RegistradaPor")
+  firmasRecepcion            FirmaRecepcion[]
+  historialAcciones          HistorialCorrespondencia[]
+  distribucionesEntregadas   DistribucionInterna[]         @relation("EntregadoPor")
+  distribucionesRecibidas    DistribucionInterna[]         @relation("RecibidoPor")
+  rutasAsignadasPor          Ruta[]                       @relation("AsignadoPor")
+  rutasMensajero             Ruta[]                       @relation("MensajeroRuta")
+  expedientesCreados         Expediente[]
 
+  @@index([rolId])
+  @@index([areaId])
   @@map("users")
 }
 
 // =============================================================================
-// AREAS ADMINISTRATIVAS
+// SESIONES (HU-01, HU-05 -- Tarjeta CRC: Sesion)
+// =============================================================================
+
+model Sesion {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  token            String   @unique @db.VarChar(500)
+  activa           Boolean  @default(true)
+  ipAddress        String?  @map("ip_address") @db.VarChar(45)
+  userAgent        String?  @map("user_agent") @db.VarChar(500)
+  fechaCreacion    DateTime @default(now()) @map("fecha_creacion")
+  fechaExpiracion  DateTime @map("fecha_expiracion")
+  ultimaActividad  DateTime @default(now()) @map("ultima_actividad")
+
+  usuario          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sesiones")
+}
+
+// =============================================================================
+// SOLICITUD DE RECUPERACION DE CONTRASENA (HU-02 -- Tarjeta CRC)
+// =============================================================================
+
+model SolicitudRecuperacion {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  token            String   @unique @db.VarChar(255)
+  usado            Boolean  @default(false)
+  fechaCreacion    DateTime @default(now()) @map("fecha_creacion")
+  fechaExpiracion  DateTime @map("fecha_expiracion")
+
+  usuario          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("solicitudes_recuperacion")
+}
+
+// =============================================================================
+// AREAS ADMINISTRATIVAS (Tarjeta CRC: AreaAdministrativa)
 // =============================================================================
 
 model AreaAdministrativa {
   id           Int      @id @default(autoincrement())
   nombre       String   @db.VarChar(200)
-  clave        String   @unique @db.VarChar(20)  // Clave corta del area (ej: DGTI, DAF)
-  responsable  String?  @db.VarChar(150)          // Nombre del titular
+  clave        String   @unique @db.VarChar(20)
+  responsable  String?  @db.VarChar(150)
   activa       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relaciones
-  usuarios              User[]
-  correspondenciasDestino Correspondencia[] @relation("DestinoArea")
-  correspondenciasOrigen  Correspondencia[] @relation("OrigenArea")
+  usuarios                User[]
+  correspondenciasDestino Correspondencia[]     @relation("DestinoArea")
+  correspondenciasOrigen  Correspondencia[]     @relation("OrigenArea")
+  distribucionesDestino   DistribucionInterna[] @relation("AreaDestinoDist")
+  expedientes             Expediente[]
 
   @@map("areas_administrativas")
 }
 
 // =============================================================================
-// CORRESPONDENCIA (modelo central)
+// CORRESPONDENCIA (HU-06, HU-08 -- Tarjeta CRC: Correspondencia + Folio)
 // =============================================================================
 
 enum TipoCorrespondencia {
-  ENTRADA   // Correspondencia recibida del exterior
-  SALIDA    // Correspondencia generada internamente para envio
+  ENTRADA
+  SALIDA
 }
 
 enum Prioridad {
@@ -89,24 +185,25 @@ enum Prioridad {
 enum Clasificacion {
   NORMAL
   CONFIDENCIAL
-  CON_VALORES   // Correspondencia que contiene valores (cheques, documentos valiosos)
+  CON_VALORES
 }
 
 enum EstadoCorrespondencia {
-  REGISTRADA          // Recien capturada en el sistema
-  EN_REVISION         // En proceso de validacion (firmas, anexos)
-  EN_DISTRIBUCION     // Asignada para distribucion interna
-  EN_RUTA             // En camino (mensajero asignado)
-  ENTREGADA           // Entregada al destinatario
-  ACUSE_PENDIENTE     // Entregada pero falta digitalizar acuse
-  CERRADA             // Ciclo completo (acuse archivado)
-  RECHAZADA           // Rechazada por validacion fallida
-  DEVUELTA            // Devuelta al remitente
+  REGISTRADA
+  EN_REVISION
+  EN_DISTRIBUCION
+  ENTREGADA_A_AREA
+  EN_RUTA
+  ENTREGADA
+  ACUSE_PENDIENTE
+  CERRADA
+  RECHAZADA
+  DEVUELTA
 }
 
 model Correspondencia {
   id               Int                    @id @default(autoincrement())
-  folio            String                 @unique @db.VarChar(30)   // Folio unico generado por el sistema
+  folio            String                 @unique @db.VarChar(30)
   tipo             TipoCorrespondencia
   prioridad        Prioridad              @default(ORDINARIA)
   clasificacion    Clasificacion          @default(NORMAL)
@@ -115,18 +212,18 @@ model Correspondencia {
   // Datos del documento
   asunto           String                 @db.VarChar(500)
   descripcion      String?                @db.Text
-  numDocumento     String?                @map("num_documento") @db.VarChar(100) // Numero de oficio/documento externo
-  fechaDocumento   DateTime?              @map("fecha_documento")                 // Fecha impresa en el documento
+  numDocumento     String?                @map("num_documento") @db.VarChar(100)
+  fechaDocumento   DateTime?              @map("fecha_documento")
   cantidadAnexos   Int                    @default(0) @map("cantidad_anexos")
   observaciones    String?                @db.Text
 
   // Remitente (externo para ENTRADA, area interna para SALIDA)
-  remitente        String?                @db.VarChar(250)   // Nombre del remitente externo
+  remitente        String?                @db.VarChar(250)
   cargoRemitente   String?                @map("cargo_remitente") @db.VarChar(200)
-  instRemitente    String?                @map("inst_remitente") @db.VarChar(250) // Institucion del remitente
+  instRemitente    String?                @map("inst_remitente") @db.VarChar(250)
 
   // Destinatario (area interna para ENTRADA, externo para SALIDA)
-  destinatario     String?                @db.VarChar(250)   // Nombre del destinatario externo
+  destinatario     String?                @db.VarChar(250)
   cargoDestinatario String?               @map("cargo_destinatario") @db.VarChar(200)
   instDestinatario String?                @map("inst_destinatario") @db.VarChar(250)
 
@@ -141,7 +238,7 @@ model Correspondencia {
   fechaRecepcion   DateTime?              @map("fecha_recepcion")
   fechaDespacho    DateTime?              @map("fecha_despacho")
   fechaEntrega     DateTime?              @map("fecha_entrega")
-  fechaLimite      DateTime?              @map("fecha_limite")     // Fecha limite de respuesta/entrega
+  fechaLimite      DateTime?              @map("fecha_limite")
 
   createdAt        DateTime               @default(now()) @map("created_at")
   updatedAt        DateTime               @updatedAt @map("updated_at")
@@ -154,9 +251,11 @@ model Correspondencia {
   anexos           Anexo[]
   acuses           Acuse[]
   firmas           FirmaRecepcion[]
-  asignaciones     AsignacionMensajeria[]
+  distribuciones   DistribucionInterna[]
+  rutas            Ruta[]
   historial        HistorialCorrespondencia[]
   selloDigital     SelloDigital?
+  expediente       Expediente?
 
   @@index([tipo])
   @@index([estado])
@@ -168,7 +267,7 @@ model Correspondencia {
 }
 
 // =============================================================================
-// ANEXOS (documentos adjuntos a la correspondencia)
+// ANEXOS
 // =============================================================================
 
 model Anexo {
@@ -187,7 +286,7 @@ model Anexo {
 }
 
 // =============================================================================
-// SELLO DIGITAL (F3 -- generacion de sellos para correspondencia de entrada)
+// SELLO DIGITAL (HU-06 -- acuse de recibo)
 // =============================================================================
 
 model SelloDigital {
@@ -195,7 +294,7 @@ model SelloDigital {
   correspondenciaId  Int             @unique @map("correspondencia_id")
   codigoSello        String          @unique @map("codigo_sello") @db.VarChar(50)
   fechaHoraSellado   DateTime        @default(now()) @map("fecha_hora_sellado")
-  cadenaOriginal     String?         @map("cadena_original") @db.Text  // Cadena para verificacion
+  cadenaOriginal     String?         @map("cadena_original") @db.Text
 
   correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
 
@@ -203,12 +302,12 @@ model SelloDigital {
 }
 
 // =============================================================================
-// ACUSES DE RECIBO (F3, F8 -- acuses generados y digitalizados)
+// ACUSES DE RECIBO (HU-06, HU-07, HU-10 -- Tarjeta CRC: Acuse)
 // =============================================================================
 
 enum TipoAcuse {
-  GENERADO      // Acuse digital generado por el sistema al recibir
-  DIGITALIZADO  // Acuse fisico escaneado/digitalizado al cerrar ciclo
+  GENERADO
+  DIGITALIZADO
 }
 
 model Acuse {
@@ -220,12 +319,13 @@ model Acuse {
   observaciones      String?         @db.Text
 
   correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  expediente         Expediente?
 
   @@map("acuses")
 }
 
 // =============================================================================
-// FIRMAS DE RECEPCION (F4 -- control de firmas internas)
+// FIRMAS DE RECEPCION (HU-07 -- control de firmas internas)
 // =============================================================================
 
 model FirmaRecepcion {
@@ -243,41 +343,121 @@ model FirmaRecepcion {
 }
 
 // =============================================================================
-// ASIGNACION DE MENSAJERIA (F7 -- rutas y despacho)
+// DISTRIBUCION INTERNA (HU-07 -- Tarjeta CRC: DistribucionInterna)
 // =============================================================================
 
-enum AlcanceDespacho {
+enum EstadoDistribucion {
+  PENDIENTE
+  EN_TRANSITO
+  ENTREGADA
+  RECHAZADA
+}
+
+model DistribucionInterna {
+  id                 Int                  @id @default(autoincrement())
+  correspondenciaId  Int                  @map("correspondencia_id")
+  areaDestinoId      Int                  @map("area_destino_id")
+  entregadoPorId     Int                  @map("entregado_por_id")
+  recibidoPorId      Int?                 @map("recibido_por_id")
+  estado             EstadoDistribucion   @default(PENDIENTE)
+  fechaDistribucion  DateTime             @default(now()) @map("fecha_distribucion")
+  fechaConfirmacion  DateTime?            @map("fecha_confirmacion")
+  observaciones      String?              @db.Text
+
+  correspondencia    Correspondencia      @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  areaDestino        AreaAdministrativa   @relation("AreaDestinoDist", fields: [areaDestinoId], references: [id])
+  entregadoPor       User                 @relation("EntregadoPor", fields: [entregadoPorId], references: [id])
+  recibidoPor        User?                @relation("RecibidoPor", fields: [recibidoPorId], references: [id])
+
+  @@index([correspondenciaId])
+  @@index([areaDestinoId])
+  @@map("distribuciones_internas")
+}
+
+// =============================================================================
+// METODO DE ENVIO (HU-09 -- Tarjeta CRC: MetodoEnvio)
+// =============================================================================
+
+enum TipoMetodoEnvio {
+  MENSAJERIA_INTERNA
+  SERVICIO_POSTAL
+  PAQUETERIA
+}
+
+model MetodoEnvio {
+  id          Int              @id @default(autoincrement())
+  nombre      String           @unique @db.VarChar(100)
+  tipo        TipoMetodoEnvio
+  descripcion String?          @db.VarChar(255)
+  activo      Boolean          @default(true)
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  rutas       Ruta[]
+
+  @@map("metodos_envio")
+}
+
+// =============================================================================
+// RUTA (HU-09 -- Tarjeta CRC: Ruta)
+// =============================================================================
+
+enum AlcanceRuta {
   LOCAL
   NACIONAL
   INTERNACIONAL
 }
 
-enum EstadoAsignacion {
+enum EstadoRuta {
   ASIGNADA
-  EN_RUTA
+  EN_TRANSITO
   ENTREGADA
   FALLIDA
 }
 
-model AsignacionMensajeria {
-  id                 Int              @id @default(autoincrement())
-  correspondenciaId  Int              @map("correspondencia_id")
-  mensajeroId        Int              @map("mensajero_id")
-  alcance            AlcanceDespacho  @default(LOCAL)
-  estado             EstadoAsignacion @default(ASIGNADA)
+model Ruta {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @map("correspondencia_id")
+  metodoEnvioId      Int             @map("metodo_envio_id")
+  mensajeroId        Int?            @map("mensajero_id")
+  asignadoPorId      Int             @map("asignado_por_id")
+  alcance            AlcanceRuta     @default(LOCAL)
+  estado             EstadoRuta      @default(ASIGNADA)
+  direccionDestino   String?         @map("direccion_destino") @db.VarChar(500)
+  numeroGuia         String?         @map("numero_guia") @db.VarChar(100)
+  fechaAsignacion    DateTime        @default(now()) @map("fecha_asignacion")
+  fechaEntrega       DateTime?       @map("fecha_entrega")
+  observaciones      String?         @db.Text
 
-  // Datos de paqueteria externa (si aplica)
-  proveedorPaqueteria String?         @map("proveedor_paqueteria") @db.VarChar(100) // Ej: Correos de Mexico, DHL
-  numeroGuia          String?         @map("numero_guia") @db.VarChar(100)
+  correspondencia    Correspondencia @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  metodoEnvio        MetodoEnvio     @relation(fields: [metodoEnvioId], references: [id])
+  mensajero          User?           @relation("MensajeroRuta", fields: [mensajeroId], references: [id])
+  asignadoPor        User            @relation("AsignadoPor", fields: [asignadoPorId], references: [id])
 
-  fechaAsignacion    DateTime         @default(now()) @map("fecha_asignacion")
-  fechaEntrega       DateTime?        @map("fecha_entrega")
-  observaciones      String?          @db.Text
+  @@index([correspondenciaId])
+  @@index([mensajeroId])
+  @@map("rutas")
+}
 
-  correspondencia    Correspondencia  @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
-  mensajero          User             @relation("Mensajero", fields: [mensajeroId], references: [id])
+// =============================================================================
+// EXPEDIENTE (HU-10 -- Tarjeta CRC: Expediente)
+// =============================================================================
 
-  @@map("asignaciones_mensajeria")
+model Expediente {
+  id                 Int             @id @default(autoincrement())
+  correspondenciaId  Int             @unique @map("correspondencia_id")
+  acuseId            Int?            @unique @map("acuse_id")
+  creadoPorId        Int             @map("creado_por_id")
+  areaGeneradoraId   Int?            @map("area_generadora_id")
+  fechaCierre        DateTime        @default(now()) @map("fecha_cierre")
+  observaciones      String?         @db.Text
+  notificado         Boolean         @default(false)
+
+  correspondencia    Correspondencia    @relation(fields: [correspondenciaId], references: [id], onDelete: Cascade)
+  acuse              Acuse?             @relation(fields: [acuseId], references: [id])
+  creadoPor          User               @relation(fields: [creadoPorId], references: [id])
+  areaGeneradora     AreaAdministrativa? @relation(fields: [areaGeneradoraId], references: [id])
+
+  @@map("expedientes")
 }
 
 // =============================================================================
@@ -288,7 +468,7 @@ model HistorialCorrespondencia {
   id                 Int             @id @default(autoincrement())
   correspondenciaId  Int             @map("correspondencia_id")
   usuarioId          Int             @map("usuario_id")
-  accion             String          @db.VarChar(100)  // Ej: "REGISTRADA", "VALIDADA", "DESPACHADA"
+  accion             String          @db.VarChar(100)
   detalle            String?         @db.Text
   estadoAnterior     String?         @map("estado_anterior") @db.VarChar(50)
   estadoNuevo        String?         @map("estado_nuevo") @db.VarChar(50)
