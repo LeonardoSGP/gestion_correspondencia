@@ -9,8 +9,8 @@ interface Usuario {
   nombre: string;
   email: string;
   activo: boolean;
-  rol: { nombre: string };
-  area: { nombre: string } | null;
+  rol: { id: number; nombre: string };
+  area: { id: number; nombre: string } | null;
 }
 
 const usuarios = ref<Usuario[]>([]);
