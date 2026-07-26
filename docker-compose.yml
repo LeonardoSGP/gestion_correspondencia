@@ -25,6 +25,7 @@ services:
       - DATABASE_URL=mysql://root:rootpassword@db:3306/gestion_correspondencia
       - JWT_SECRET=super_secret_key_123
       - PORT=3000
+      - FRONTEND_URL=http://localhost
     ports:
       - "3001:3000"
     volumes:
