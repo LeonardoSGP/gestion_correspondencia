@@ -1,53 +1,27 @@
-# ────────────────────────────────────────────────────────────────────────────
-# Etapa 1: build — compila TypeScript a JavaScript
-# ────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS build
+FROM node:20-alpine
 
-LABEL stage="build"
-LABEL description="Etapa de compilación del backend Node.js / TypeScript"
-
+# Set working directory
 WORKDIR /app
 
+# Install openssl (required by Prisma)
 RUN apk add --no-cache openssl
 
-COPY package.json package-lock.json ./
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install dependencies
 RUN npm ci
 
+# Copy the rest of the application
 COPY . .
 
+# Generate Prisma client and build TypeScript
 RUN npx prisma generate
 RUN npm run build
 
-# ────────────────────────────────────────────────────────────────────────────
-# Etapa 2: producción — imagen final mínima (solo runtime)
-# ────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS production
+# Expose port
+EXPOSE 3000
 
-LABEL maintainer="Sistema de Gestión de Correspondencia"
-LABEL description="Backend API REST — Node.js 20 + Express + Prisma"
-
-WORKDIR /app
-
-RUN apk add --no-cache openssl dos2unix
-
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-COPY --from=build /app/dist              ./dist
-COPY --from=build /app/prisma            ./prisma
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-
-RUN npm install -g prisma
-
-RUN mkdir -p uploads && chown -R node:node uploads
-
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN dos2unix /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
-
-USER node
-
-EXPOSE 3001
-
-ENTRYPOINT ["/bin/sh", "/usr/local/bin/docker-entrypoint.sh"]
-CMD ["npm", "start"]
+# Start the server
+CMD ["npm", "run", "start"]
