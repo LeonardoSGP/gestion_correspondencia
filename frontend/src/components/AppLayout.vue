@@ -16,7 +16,7 @@ const logout = async () => {
   <div class="dashboard-layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h2 style="color: var(--color-primary);">SIGC</h2>
+        <h2 style="color: var(--color-primary);">SGC</h2>
         <p style="font-size: 0.75rem; color: var(--text-muted);">{{ authStore.userRole }}</p>
       </div>
       <nav class="sidebar-nav">
@@ -24,10 +24,10 @@ const logout = async () => {
         
         <!-- Recepción y Despacho -->
         <div class="nav-section">Operación</div>
-        <router-link to="/recepcion" class="nav-link">Recepción</router-link>
-        <router-link to="/distribucion" class="nav-link">Distribución</router-link>
-        <router-link to="/despacho" class="nav-link">Despacho</router-link>
-        <router-link to="/enrutamiento" class="nav-link">Enrutamiento</router-link>
+        <router-link to="/recepcion" class="nav-link">1. Recepción (Entrada Externa)</router-link>
+        <router-link to="/distribucion" class="nav-link">2. Distribución (Interna)</router-link>
+        <router-link to="/despacho" class="nav-link">3. Despacho (Salida Externa)</router-link>
+        <router-link to="/enrutamiento" class="nav-link">4. Enrutamiento (Rutas Externas)</router-link>
         
         <!-- Archivo Central -->
         <div class="nav-section">Gestión Documental</div>

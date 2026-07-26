@@ -53,11 +53,19 @@ export class EnrutamientoService {
     if (ruta.estado !== 'ASIGNADA' && ruta.estado !== 'EN_TRANSITO') {
       throw new AppError('Estado no valido para marcar como entregada', 400);
     }
+    const user = await prisma.user.findUnique({ where: { id: usuarioId }, include: { rol: true } });
+    if (user?.rol?.nombre === 'MENSAJERO' && ruta.mensajeroId !== usuarioId) {
+      throw new AppError('No puedes marcar una ruta que fue asignada a otro mensajero', 403);
+    }
     return this.repository.actualizarEstado(id, 'ENTREGADA', usuarioId, new Date(), observaciones);
   }
 
   async reportarFallo(id: number, usuarioId: number, observaciones: string) {
     const ruta = await this.obtenerRuta(id);
+    const user = await prisma.user.findUnique({ where: { id: usuarioId }, include: { rol: true } });
+    if (user?.rol?.nombre === 'MENSAJERO' && ruta.mensajeroId !== usuarioId) {
+      throw new AppError('No puedes reportar un fallo en una ruta de otro mensajero', 403);
+    }
     return this.repository.actualizarEstado(id, 'FALLIDA', usuarioId, undefined, observaciones);
   }
 

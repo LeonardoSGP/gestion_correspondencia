@@ -196,6 +196,109 @@ async function main() {
     });
   }
 
+  // -- Usuario Area Administrativa de prueba --
+  const areaUserExists = await prisma.user.findUnique({ where: { email: 'area@correspondencia.gob.mx' } });
+  if (!areaUserExists) {
+    const area = await prisma.areaAdministrativa.findUnique({ where: { clave: 'DG' } });
+    await prisma.user.create({
+      data: {
+        nombre: 'Funcionario Direccion General',
+        email: 'area@correspondencia.gob.mx',
+        password: hashedPassword,
+        rolId: rolAreaAdmin.id,
+        areaId: area?.id,
+      },
+    });
+  }
+
+  // -- DATOS TRANSACCIONALES DE PRUEBA --
+
+  // 1. Correspondencia de Entrada
+  let entrada = await prisma.correspondencia.findFirst({ where: { folio: 'EXT-2026-00001' } });
+  if (!entrada) {
+    const areaUCC = await prisma.areaAdministrativa.findUnique({ where: { clave: 'UCC' } });
+    const areaDG = await prisma.areaAdministrativa.findUnique({ where: { clave: 'DG' } });
+    const admin = await prisma.user.findUnique({ where: { email: 'admin@correspondencia.gob.mx' } });
+    const mensajero = await prisma.user.findUnique({ where: { email: 'mensajero@correspondencia.gob.mx' } });
+    const metodoEnvio = await prisma.metodoEnvio.findFirst();
+
+    if (admin && areaDG && areaUCC && mensajero && metodoEnvio) {
+      // 1. Recepcion
+      entrada = await prisma.correspondencia.create({
+        data: {
+          folio: 'EXT-2026-00001',
+          tipo: 'ENTRADA',
+          estado: 'ENTREGADA_A_AREA',
+          asunto: 'Invitación a Foro Nacional',
+          remitente: 'Secretaría de Gobernación',
+          prioridad: 'ORDINARIA',
+          clasificacion: 'NORMAL',
+          areaDestinoId: areaDG.id,
+          registradoPorId: admin.id,
+          fechaRecepcion: new Date(),
+          selloDigital: {
+            create: { codigoSello: 'SELLO-001', cadenaOriginal: '||EXT-2026-00001|Foro Nacional||' }
+          },
+          acuses: {
+            create: { tipo: 'GENERADO', observaciones: 'Acuse generado' }
+          }
+        }
+      });
+
+      // 2. Distribucion Interna
+      await prisma.distribucionInterna.create({
+        data: {
+          correspondenciaId: entrada.id,
+          areaDestinoId: areaDG.id,
+          entregadoPorId: admin.id,
+          estado: 'PENDIENTE',
+          fechaDistribucion: new Date()
+        }
+      });
+
+      // 3. Correspondencia de Salida (Despacho)
+      const salida = await prisma.correspondencia.create({
+        data: {
+          folio: 'SAL-2026-00001',
+          tipo: 'SALIDA',
+          estado: 'EN_RUTA',
+          asunto: 'Respuesta a Invitación',
+          destinatario: 'Secretaría de Gobernación',
+          prioridad: 'ORDINARIA',
+          clasificacion: 'NORMAL',
+          areaOrigenId: areaDG.id,
+          registradoPorId: admin.id,
+          fechaRecepcion: new Date(),
+          historial: {
+            create: { usuarioId: admin.id, accion: 'REGISTRO', detalle: 'Salida', estadoNuevo: 'REGISTRADA' }
+          }
+        }
+      });
+
+      // 4. Enrutamiento (Ruta)
+      await prisma.ruta.create({
+        data: {
+          correspondenciaId: salida.id,
+          metodoEnvioId: metodoEnvio.id,
+          mensajeroId: mensajero.id,
+          asignadoPorId: admin.id,
+          alcance: 'LOCAL',
+          estado: 'EN_TRANSITO'
+        }
+      });
+
+      // 5. Archivo (Expediente de prueba)
+      await prisma.expediente.create({
+        data: {
+          correspondenciaId: entrada.id,
+          acuseId: null,
+          creadoPorId: admin.id,
+          notificado: false
+        }
+      });
+    }
+  }
+
   console.log('Seed completado.');
 }
 

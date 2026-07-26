@@ -13,14 +13,24 @@ const stats = ref({
 });
 
 const loadStats = async () => {
-  // Aquí se haría una llamada a la API para obtener métricas reales
-  // Por ahora, simulamos algunos datos
-  stats.value = {
-    entradas: 145,
-    salidas: 89,
-    pendientes: 23,
-    usuarios: 12
-  };
+  try {
+    const [resRecepcion, resDespacho, resDistribucion, resUsuarios] = await Promise.all([
+      api.get('/recepcion'),
+      api.get('/despacho'),
+      api.get('/distribucion'),
+      api.get('/usuarios')
+    ]);
+    
+    stats.value = {
+      entradas: resRecepcion.data?.length || 0,
+      salidas: resDespacho.data?.length || 0,
+      pendientes: (resDistribucion.data?.data || []).filter((d: any) => d.estado !== 'ENTREGADA').length || 0,
+      usuarios: resUsuarios.data?.usuarios?.length || resUsuarios.data?.data?.length || resUsuarios.data?.length || 0
+    };
+  } catch (error) {
+    console.error('Error cargando estadísticas', error);
+    stats.value = { entradas: 0, salidas: 0, pendientes: 0, usuarios: 0 };
+  }
 };
 
 onMounted(() => {
@@ -31,7 +41,7 @@ onMounted(() => {
 <template>
   <div class="dashboard-header">
     <h1>Panel de Control</h1>
-    <p>Bienvenido, {{ authStore.user?.nombre }} ({{ authStore.userRole }})</p>
+    <p>Bienvenido al Sistema de Gestión de Correspondencia, {{ authStore.user?.nombre }} ({{ authStore.userRole }})</p>
   </div>
 
   <div class="stats-grid">
@@ -76,25 +86,7 @@ onMounted(() => {
     </div>
   </div>
 
-  <div class="recent-activity glass-panel" style="margin-top: 2rem; padding: 1.5rem;">
-    <h2 style="margin-bottom: 1rem;">Actividad Reciente</h2>
-    <div class="activity-list">
-      <div class="activity-item">
-        <div class="activity-dot"></div>
-        <div class="activity-content">
-          <p><strong>Recepción:</strong> Nueva correspondencia de entrada folio EXT-2026-0001</p>
-          <span class="activity-time">Hace 10 minutos</span>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-dot"></div>
-        <div class="activity-content">
-          <p><strong>Despacho:</strong> Correspondencia SAL-2026-0012 enviada a mensajería</p>
-          <span class="activity-time">Hace 1 hora</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Eliminé la sección de Actividad Reciente simulada para evitar confusiones -->
 </template>
 
 <style scoped>

@@ -11,6 +11,16 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue')
     },
     {
+      path: '/recuperar',
+      name: 'recuperar',
+      component: () => import('../views/RecuperarView.vue')
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('../views/ResetPasswordView.vue')
+    },
+    {
       path: '/',
       component: AppLayout,
       meta: { requiresAuth: true },

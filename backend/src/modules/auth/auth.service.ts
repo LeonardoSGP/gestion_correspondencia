@@ -63,6 +63,7 @@ export const authService = {
                   <p>Este enlace expirará en 1 hora.</p>`;
     
     await enviarCorreo(email, 'Recuperación de contraseña', html);
+    return resetLink;
   },
 
   restablecerContrasena: async (input: RestablecerContrasenaInput) => {

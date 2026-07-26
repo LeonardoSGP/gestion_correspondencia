@@ -8,11 +8,22 @@ const loading = ref(true);
 const loadExpedientes = async () => {
   try {
     const { data } = await api.get('/archivo/expedientes');
-    expedientes.value = data.data;
+    expedientes.value = data;
   } catch (error) {
     console.error('Error fetching expedientes', error);
   } finally {
     loading.value = false;
+  }
+};
+
+const notificarOrigen = async (id: number) => {
+  if (confirm('¿Deseas enviar la notificación de archivo al área de origen?')) {
+    try {
+      await api.patch(`/archivo/expedientes/${id}/notificar`);
+      loadExpedientes();
+    } catch (error) {
+      console.error('Error al notificar', error);
+    }
   }
 };
 
@@ -50,9 +61,18 @@ onMounted(() => {
             <td>{{ exp.acuse?.id ? `Acuse #${exp.acuse.id}` : 'N/A' }}</td>
             <td>{{ new Date(exp.fechaCierre).toLocaleString() }}</td>
             <td>
-              <span class="badge" :class="exp.notificado ? 'badge-success' : ''">
-                {{ exp.notificado ? 'Sí' : 'No' }}
-              </span>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="badge" :class="exp.notificado ? 'badge-success' : ''">
+                  {{ exp.notificado ? 'Sí' : 'No' }}
+                </span>
+                <button 
+                  v-if="!exp.notificado" 
+                  @click="notificarOrigen(exp.id)" 
+                  class="btn btn-primary" 
+                  style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">
+                  Notificar
+                </button>
+              </div>
             </td>
           </tr>
           <tr v-if="expedientes.length === 0">

@@ -37,8 +37,8 @@ export class DespachoRepository {
           fechaDocumento: data.fechaDocumento,
           cantidadAnexos: data.cantidadAnexos || 0,
           observaciones: data.observaciones,
-          prioridad: data.prioridad as any || 'NORMAL',
-          clasificacion: data.clasificacion as any || 'ORDINARIA',
+          prioridad: data.prioridad as any || 'ORDINARIA',
+          clasificacion: data.clasificacion as any || 'NORMAL',
           destinatario: data.destinatario,
           cargoDestinatario: data.cargoDestinatario,
           instDestinatario: data.instDestinatario,
@@ -52,7 +52,7 @@ export class DespachoRepository {
           correspondenciaId: correspondencia.id,
           estadoNuevo: 'REGISTRADA',
           accion: 'REGISTRO_DESPACHO_SALIDA',
-          observacion: 'Registro inicial de correspondencia de salida',
+          detalle: 'Registro inicial de correspondencia de salida',
           usuarioId: registradoPorId,
         }
       });

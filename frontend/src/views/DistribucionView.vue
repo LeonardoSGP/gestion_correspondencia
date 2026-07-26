@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 
@@ -17,12 +18,23 @@ const loadDistribuciones = async () => {
 };
 
 const confirmarEntrega = async (id: number) => {
-  if (confirm('¿Confirmar entrega a esta área?')) {
+  const result = await Swal.fire({
+    title: '¿Confirmar entrega?',
+    text: '¿Confirmar entrega a esta área?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, confirmar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
     try {
       await api.patch(`/distribucion/${id}/confirmar`, { observaciones: 'Entregado conforme' });
       loadDistribuciones();
-    } catch (error) {
+      Swal.fire({ title: 'Éxito', text: 'Entrega confirmada', icon: 'success' });
+    } catch (error: any) {
       console.error('Error al confirmar', error);
+      Swal.fire({ title: 'Error', text: `No se pudo confirmar: ${error.response?.data?.message || error.message}`, icon: 'error' });
     }
   }
 };

@@ -32,8 +32,8 @@ router.post('/logout', authMiddleware, (async (req: AuthRequest, res, next) => {
 router.post('/recuperar-contrasena', (async (req, res, next) => {
   try {
     const { email } = recuperarContrasenaSchema.parse(req.body);
-    await authService.recuperarContrasena(email);
-    res.json({ message: 'Si el correo existe, se han enviado las instrucciones.' });
+    const resetLink = await authService.recuperarContrasena(email);
+    res.json({ message: 'Si el correo existe, se han enviado las instrucciones.', resetLink });
   } catch (error) {
     next(error);
   }

@@ -58,7 +58,7 @@ router.get(
 
 router.patch(
   '/:id/confirmar',
-  requireRole(['ADMIN', 'OPERADOR_UCC', 'AREA_ADMINISTRATIVA']),
+  requireRole(['ADMIN', 'OPERADOR_UCC', 'AREA_ADMINISTRATIVA', 'MENSAJERO']),
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id as string, 10);

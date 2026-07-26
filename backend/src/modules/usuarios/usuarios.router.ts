@@ -14,10 +14,10 @@ import { UsuarioFilter } from './usuarios.types';
 const router = Router();
 
 router.use(authMiddleware);
-router.use(requireRole(['ADMIN']));
+
 
 // Static routes for roles and permisos
-router.get('/roles', async (req, res, next) => {
+router.get('/roles', requireRole(['ADMIN', 'OPERADOR_UCC']), async (req, res, next) => {
   try {
     const roles = await usuariosService.listarRoles();
     res.json(roles);
@@ -26,7 +26,7 @@ router.get('/roles', async (req, res, next) => {
   }
 });
 
-router.post('/roles', async (req, res, next) => {
+router.post('/roles', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const validated = createRolSchema.parse(req.body);
     const rol = await usuariosService.crearRol(validated);
@@ -36,7 +36,7 @@ router.post('/roles', async (req, res, next) => {
   }
 });
 
-router.get('/roles/:id', async (req, res, next) => {
+router.get('/roles/:id', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const rol = await usuariosService.obtenerRol(id);
@@ -46,7 +46,7 @@ router.get('/roles/:id', async (req, res, next) => {
   }
 });
 
-router.put('/roles/:id/permisos', async (req, res, next) => {
+router.put('/roles/:id/permisos', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const validated = asignarPermisosSchema.parse(req.body);
@@ -57,7 +57,7 @@ router.put('/roles/:id/permisos', async (req, res, next) => {
   }
 });
 
-router.get('/permisos', async (req, res, next) => {
+router.get('/permisos', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const permisos = await usuariosService.listarPermisos();
     res.json(permisos);
@@ -67,7 +67,7 @@ router.get('/permisos', async (req, res, next) => {
 });
 
 // Dynamic routes for users
-router.get('/', async (req, res, next) => {
+router.get('/', requireRole(['ADMIN', 'OPERADOR_UCC']), async (req, res, next) => {
   try {
     const filter: UsuarioFilter = {
       nombre: req.query.nombre as string,
@@ -85,7 +85,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const validated = createUsuarioSchema.parse(req.body);
     const user = await usuariosService.crearUsuario(validated);
@@ -95,7 +95,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireRole(['ADMIN', 'OPERADOR_UCC']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const user = await usuariosService.obtenerUsuario(id);
@@ -105,7 +105,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const validated = updateUsuarioSchema.parse(req.body);
@@ -116,7 +116,7 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-router.patch('/:id/deshabilitar', async (req, res, next) => {
+router.patch('/:id/deshabilitar', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const user = await usuariosService.deshabilitarUsuario(id);
@@ -126,7 +126,7 @@ router.patch('/:id/deshabilitar', async (req, res, next) => {
   }
 });
 
-router.patch('/:id/rol', async (req, res, next) => {
+router.patch('/:id/rol', requireRole(['ADMIN']), async (req, res, next) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const validated = asignarRolSchema.parse(req.body);

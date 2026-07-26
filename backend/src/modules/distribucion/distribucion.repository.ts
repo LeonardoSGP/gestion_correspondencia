@@ -25,7 +25,7 @@ export class DistribucionRepository {
           correspondenciaId: data.correspondenciaId,
           usuarioId: entregadoPorId,
           accion: 'DISTRIBUCION_REGISTRADA',
-          detalles: `Distribución registrada hacia el área destino ID: ${data.areaDestinoId}`,
+          detalle: `Distribución registrada hacia el área destino ID: ${data.areaDestinoId}`,
         },
       });
 
@@ -84,7 +84,6 @@ export class DistribucionRepository {
           correspondenciaId: distribucion.correspondenciaId,
           firmadoPorId: recibidoPorId,
           fechaFirma: new Date(),
-          valida: true,
         },
       });
 
@@ -93,7 +92,7 @@ export class DistribucionRepository {
           correspondenciaId: distribucion.correspondenciaId,
           usuarioId: recibidoPorId,
           accion: 'DISTRIBUCION_CONFIRMADA',
-          detalles: `Entrega confirmada. Observaciones: ${observaciones || 'Ninguna'}`,
+          detalle: `Entrega confirmada. Observaciones: ${observaciones || 'Ninguna'}`,
         },
       });
 

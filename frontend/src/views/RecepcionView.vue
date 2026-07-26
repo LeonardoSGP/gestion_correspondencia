@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth.store';
 
 const authStore = useAuthStore();
 const correspondencias = ref([]);
+const areas = ref<{id: number; nombre: string}[]>([]);
 const loading = ref(true);
 
 const form = ref({
   asunto: '',
   remitente: '',
   areaDestinoId: '',
-  prioridad: 'NORMAL',
-  clasificacion: 'ORDINARIA',
+  prioridad: 'ORDINARIA',
+  clasificacion: 'NORMAL',
   cantidadAnexos: 0,
 });
 
@@ -21,7 +23,7 @@ const isModalOpen = ref(false);
 const loadCorrespondencia = async () => {
   try {
     const { data } = await api.get('/recepcion');
-    correspondencias.value = data.data;
+    correspondencias.value = data;
   } catch (error) {
     console.error('Error fetching recepcion', error);
   } finally {
@@ -29,24 +31,36 @@ const loadCorrespondencia = async () => {
   }
 };
 
+const fetchAreas = async () => {
+  try {
+    const resAreas = await api.get('/areas');
+    areas.value = resAreas.data.data || resAreas.data;
+  } catch (error) {
+    console.error('Error fetching areas', error);
+  }
+};
+
 const registrarRecepcion = async () => {
   try {
     await api.post('/recepcion', {
       ...form.value,
-      areaDestinoId: parseInt(form.value.areaDestinoId)
+      areaDestinoId: parseInt(form.value.areaDestinoId as string)
     });
     isModalOpen.value = false;
     form.value = {
-      asunto: '', remitente: '', areaDestinoId: '', prioridad: 'NORMAL', clasificacion: 'ORDINARIA', cantidadAnexos: 0
+      asunto: '', remitente: '', areaDestinoId: '', prioridad: 'ORDINARIA', clasificacion: 'NORMAL', cantidadAnexos: 0
     };
     loadCorrespondencia();
-  } catch (error) {
+    Swal.fire({ title: 'Éxito', text: 'Recepción registrada exitosamente', icon: 'success' });
+  } catch (error: any) {
     console.error('Error registrando correspondencia', error);
+    Swal.fire({ title: 'Error', text: `No se pudo registrar: ${error.response?.data?.message || error.message}`, icon: 'error' });
   }
 };
 
 onMounted(() => {
   loadCorrespondencia();
+  fetchAreas();
 });
 </script>
 
@@ -79,15 +93,18 @@ onMounted(() => {
           </div>
           
           <div class="form-group">
-            <label class="form-label">ID Área Destino</label>
-            <input v-model="form.areaDestinoId" type="number" class="form-input" required />
+            <label class="form-label">Área Destino</label>
+            <select v-model="form.areaDestinoId" class="form-input" required>
+              <option value="" disabled>Seleccione un área...</option>
+              <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.nombre }}</option>
+            </select>
           </div>
 
           <div style="display: flex; gap: 1rem;">
             <div class="form-group" style="flex: 1;">
               <label class="form-label">Prioridad</label>
               <select v-model="form.prioridad" class="form-input">
-                <option value="NORMAL">Normal</option>
+                <option value="ORDINARIA">Ordinaria</option>
                 <option value="URGENTE">Urgente</option>
               </select>
             </div>
@@ -95,7 +112,7 @@ onMounted(() => {
             <div class="form-group" style="flex: 1;">
               <label class="form-label">Clasificación</label>
               <select v-model="form.clasificacion" class="form-input">
-                <option value="ORDINARIA">Ordinaria</option>
+                <option value="NORMAL">Normal</option>
                 <option value="CONFIDENCIAL">Confidencial</option>
                 <option value="CON_VALORES">Con Valores</option>
               </select>

@@ -36,7 +36,7 @@ export class ArchivoRepository {
           estadoNuevo: 'CERRADA',
           accion: 'CIERRE_CICLO',
           usuarioId: creadoPorId,
-          comentarios: observaciones || 'Ciclo documental cerrado',
+          detalle: observaciones || 'Ciclo documental cerrado',
         },
       });
 

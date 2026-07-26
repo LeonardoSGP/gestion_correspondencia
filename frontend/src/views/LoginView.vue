@@ -21,8 +21,8 @@ const handleLogin = async () => {
   <div class="login-container">
     <div class="glass-panel login-card">
       <div class="login-header">
-        <h1 style="text-align: center; margin-bottom: 0.5rem; color: var(--color-primary);">SIGC</h1>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Sistema Institucional de Gestión de Correspondencia</p>
+        <h1 style="text-align: center; margin-bottom: 0.5rem; color: var(--color-primary);">SGC</h1>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Sistema de Gestión de Correspondencia</p>
       </div>
 
       <div v-if="authStore.error" class="error-message">

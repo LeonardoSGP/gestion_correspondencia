@@ -147,3 +147,8 @@ a:hover {
   background-color: var(--bg-surface-hover);
   border-color: var(--text-muted);
 }
+
+/* SweetAlert2 Overrides */
+.swal2-popup { font-size: 0.85rem !important; width: 26em !important; border-radius: 12px !important; padding: 1.5rem !important; }
+.swal2-title { font-size: 1.25rem !important; }
+

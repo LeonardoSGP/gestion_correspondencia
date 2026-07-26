@@ -67,11 +67,20 @@ export class RecepcionRepository {
               detalle: 'Registro inicial de correspondencia de entrada',
               estadoNuevo: 'REGISTRADA'
             }
+          },
+          distribuciones: {
+            create: {
+              areaDestinoId: data.areaDestinoId,
+              entregadoPorId: registradoPorId,
+              estado: 'PENDIENTE',
+              observaciones: 'Distribución creada automáticamente al registrar la entrada'
+            }
           }
         },
         include: {
           selloDigital: true,
-          acuses: true
+          acuses: true,
+          distribuciones: true
         }
       });
 
