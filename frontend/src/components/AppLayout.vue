@@ -35,10 +35,11 @@ const handleSearch = async () => {
     let timelineHtml = '<div style="text-align: left; font-size: 0.9em; max-height: 300px; overflow-y: auto;">';
     historial.forEach((h: any) => {
       const date = new Date(h.createdAt).toLocaleString();
+      const estadoLabel = h.estadoNuevo ? ` (${h.estadoNuevo})` : '';
       timelineHtml += `
         <div style="margin-bottom: 10px; border-left: 3px solid #0056b3; padding-left: 10px;">
           <strong>${date}</strong><br>
-          <span style="color: #666;">${h.accion} (${h.estadoNuevo})</span><br>
+          <span style="color: #666;">${h.accion}${estadoLabel}</span><br>
           <em>${h.detalle}</em>
         </div>
       `;
