@@ -121,7 +121,7 @@ onMounted(() => {
         <p>Administra los accesos y roles del sistema.</p>
       </div>
       <button class="btn btn-primary" @click="abrirModalNuevo">
-        <Plus size="16" /> Nuevo Usuario
+        <Plus :size="16" /> Nuevo Usuario
       </button>
     </div>
 
@@ -149,8 +149,8 @@ onMounted(() => {
             </td>
             <td>
               <div class="actions">
-                <button @click="abrirModalEditar(user)" class="btn-icon" title="Editar"><Edit2 size="16" /></button>
-                <button @click="deshabilitarUsuario(user.id)" class="btn-icon text-danger" title="Deshabilitar"><Trash2 size="16" /></button>
+                <button @click="abrirModalEditar(user)" class="btn-icon" title="Editar"><Edit2 :size="16" /></button>
+                <button @click="deshabilitarUsuario(user.id)" class="btn-icon text-danger" title="Deshabilitar"><Trash2 :size="16" /></button>
               </div>
             </td>
           </tr>

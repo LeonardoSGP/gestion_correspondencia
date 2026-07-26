@@ -47,7 +47,7 @@ onMounted(() => {
   <div class="stats-grid">
     <div class="stat-card glass-panel">
       <div class="stat-icon" style="background-color: #eff6ff; color: var(--color-primary);">
-        <FileText size="24" />
+        <FileText :size="24" />
       </div>
       <div class="stat-details">
         <h3>Entradas Registradas</h3>
@@ -57,7 +57,7 @@ onMounted(() => {
 
     <div class="stat-card glass-panel">
       <div class="stat-icon" style="background-color: #f0fdf4; color: var(--color-success);">
-        <Send size="24" />
+        <Send :size="24" />
       </div>
       <div class="stat-details">
         <h3>Salidas Despachadas</h3>
@@ -67,7 +67,7 @@ onMounted(() => {
 
     <div class="stat-card glass-panel">
       <div class="stat-icon" style="background-color: #fffbeb; color: var(--color-warning);">
-        <Activity size="24" />
+        <Activity :size="24" />
       </div>
       <div class="stat-details">
         <h3>Trámites Pendientes</h3>
@@ -77,7 +77,7 @@ onMounted(() => {
 
     <div class="stat-card glass-panel" v-if="authStore.userRole === 'ADMIN'">
       <div class="stat-icon" style="background-color: #f5f3ff; color: #8b5cf6;">
-        <Users size="24" />
+        <Users :size="24" />
       </div>
       <div class="stat-details">
         <h3>Usuarios Activos</h3>

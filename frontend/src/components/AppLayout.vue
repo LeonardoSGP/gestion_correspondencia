@@ -40,8 +40,7 @@ const logout = async () => {
       
       <div class="sidebar-footer">
         <button @click="logout" class="btn btn-secondary" style="width: 100%;">
-          <LogOut size="16" /> Salir
-        </button>
+            <LogOut :size="18" style="margin-right: 0.5rem;" /> Cerrar Sesión    </button>
       </div>
     </aside>
 

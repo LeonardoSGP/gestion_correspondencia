@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 
-const expedientes = ref([]);
+const expedientes = ref<any[]>([]);
 const loading = ref(true);
 
 const loadExpedientes = async () => {

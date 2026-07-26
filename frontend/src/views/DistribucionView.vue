@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 
-const distribuciones = ref([]);
+const distribuciones = ref<any[]>([]);
 const loading = ref(true);
 
 const loadDistribuciones = async () => {

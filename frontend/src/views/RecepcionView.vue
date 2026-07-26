@@ -5,7 +5,7 @@ import api from '../services/api';
 import { useAuthStore } from '../stores/auth.store';
 
 const authStore = useAuthStore();
-const correspondencias = ref([]);
+const correspondencias = ref<any[]>([]);
 const areas = ref<{id: number; nombre: string}[]>([]);
 const loading = ref(true);
 
