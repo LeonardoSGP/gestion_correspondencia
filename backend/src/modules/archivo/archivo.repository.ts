@@ -15,8 +15,13 @@ export class ArchivoRepository {
 
   async cerrarCiclo(correspondenciaId: number, acuseId: number, creadoPorId: number, areaGeneradoraId?: number, observaciones?: string) {
     return prisma.$transaction(async (tx) => {
-      const expediente = await tx.expediente.create({
-        data: {
+      const expediente = await tx.expediente.upsert({
+        where: { correspondenciaId },
+        update: {
+          acuseId,
+          observaciones,
+        },
+        create: {
           correspondenciaId,
           acuseId,
           creadoPorId,
