@@ -65,8 +65,11 @@ const subirAcuse = async (item: any) => {
   const { value: formValues } = await Swal.fire({
     title: 'Subir Acuse',
     html: `
-      <input type="file" id="swal-file" accept="image/*,.pdf" style="margin-bottom: 15px; width: 80%; max-width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit;">
-      <input id="swal-obs" class="swal2-input" placeholder="Observaciones" style="width: 80%; max-width: 100%; box-sizing: border-box;">
+      <label id="swal-file-label" for="swal-file" style="display: block; cursor: pointer; padding: 10px; background: var(--color-primary); color: white; border-radius: 6px; text-align: center; margin-bottom: 15px; width: 80%; max-width: 100%; box-sizing: border-box; margin-left: auto; margin-right: auto; font-family: inherit; font-size: 1rem;">
+        📂 Seleccionar Acuse (PDF/Imagen)
+      </label>
+      <input type="file" id="swal-file" accept="image/*,.pdf" style="display: none;" onchange="document.getElementById('swal-file-label').innerText = '✅ ' + (this.files[0] ? this.files[0].name : 'Seleccionar Acuse (PDF/Imagen)')">
+      <input id="swal-obs" class="swal2-input" placeholder="Observaciones (Opcional)" style="width: 80%; max-width: 100%; box-sizing: border-box; font-family: inherit;">
     `,
     showCancelButton: true,
     confirmButtonText: 'Subir Acuse',
