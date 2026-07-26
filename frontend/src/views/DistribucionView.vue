@@ -21,8 +21,8 @@ const confirmarEntrega = async (id: number) => {
   const result = await Swal.fire({
     title: 'Confirmar entrega',
     html: `
-      <input id="swal-recibio" class="swal2-input" placeholder="Recibió (Nombre)">
-      <input id="swal-obs" class="swal2-input" placeholder="Observaciones">
+      <input id="swal-recibio" class="swal2-input" placeholder="Recibió (Nombre)" style="width: 80%; max-width: 100%; box-sizing: border-box;">
+      <input id="swal-obs" class="swal2-input" placeholder="Observaciones" style="width: 80%; max-width: 100%; box-sizing: border-box;">
     `,
     showCancelButton: true,
     confirmButtonText: 'Confirmar',
