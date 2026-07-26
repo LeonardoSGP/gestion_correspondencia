@@ -2,7 +2,9 @@
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import Swal from 'sweetalert2';
+import { useAuthStore } from '../stores/auth.store';
 
+const authStore = useAuthStore();
 const expedientes = ref<any[]>([]);
 const loading = ref(true);
 
@@ -66,7 +68,7 @@ onMounted(() => {
         <h1>Archivo Central (HU-10)</h1>
         <p>Resguardo de acuses de recibo y expedientes cerrados.</p>
       </div>
-      <button @click="exportarCSV" class="btn btn-primary" style="background-color: #28a745; border-color: #28a745;">
+      <button v-if="['ADMIN', 'OPERADOR_UCC'].includes(authStore.userRole)" @click="exportarCSV" class="btn btn-primary" style="background-color: #28a745; border-color: #28a745;">
         Exportar a CSV
       </button>
     </div>
@@ -96,7 +98,7 @@ onMounted(() => {
                   {{ exp.notificado ? 'Sí' : 'No' }}
                 </span>
                 <button 
-                  v-if="!exp.notificado" 
+                  v-if="!exp.notificado && ['ADMIN', 'OPERADOR_UCC'].includes(authStore.userRole)" 
                   @click="notificarOrigen(exp.id)" 
                   class="btn btn-primary" 
                   style="padding: 0.2rem 0.5rem; font-size: 0.7rem;">

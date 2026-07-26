@@ -120,7 +120,7 @@ onMounted(() => {
         <h1>Registro de Despacho (HU-08)</h1>
         <p>Registro de correspondencia de salida hacia el exterior.</p>
       </div>
-      <button v-if="['ADMIN', 'OPERADOR_UCC', 'AREA_ADMINISTRATIVA'].includes(useAuthStore().userRole)" @click="isModalOpen = true" class="btn btn-primary">
+      <button v-if="['ADMIN', 'AREA_ADMINISTRATIVA'].includes(useAuthStore().userRole)" @click="isModalOpen = true" class="btn btn-primary">
         + Nuevo Despacho
       </button>
     </div>

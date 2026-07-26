@@ -118,7 +118,7 @@ onMounted(() => {
         <h1>Recepción de Correspondencia (HU-06)</h1>
         <p>Registro de correspondencia de entrada externa.</p>
       </div>
-      <button v-if="authStore.userRole !== 'MENSAJERO'" @click="isModalOpen = true" class="btn btn-primary">
+      <button v-if="['ADMIN', 'OPERADOR_UCC'].includes(authStore.userRole)" @click="isModalOpen = true" class="btn btn-primary">
         + Nueva Recepción
       </button>
     </div>
@@ -200,7 +200,7 @@ onMounted(() => {
               <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">
                 <Printer :size="18" />
               </button>
-              <button v-if="item.estado === 'ENTREGADA_A_AREA' || item.estado === 'ENTREGADA'" class="btn-icon" style="color: #28a745;" @click="subirAcuse(item)" title="Subir Acuse Digitalizado">
+              <button v-if="(item.estado === 'ENTREGADA_A_AREA' || item.estado === 'ENTREGADA') && ['ADMIN', 'OPERADOR_UCC'].includes(authStore.userRole)" class="btn-icon" style="color: #28a745;" @click="subirAcuse(item)" title="Subir Acuse Digitalizado">
                 <Upload :size="18" />
               </button>
             </td>
