@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 
 const expedientes = ref<any[]>([]);
 const loading = ref(true);
@@ -27,6 +28,32 @@ const notificarOrigen = async (id: number) => {
   }
 };
 
+const exportarCSV = () => {
+  if (expedientes.value.length === 0) {
+    Swal.fire('Vacío', 'No hay datos para exportar.', 'info');
+    return;
+  }
+  
+  const headers = ['Folio', 'Asunto', 'Tipo', 'Área Generadora', 'Fecha Cierre'];
+  const rows = expedientes.value.map(e => [
+    e.correspondencia?.folio || '',
+    `"${(e.correspondencia?.asunto || '').replace(/"/g, '""')}"`,
+    e.correspondencia?.tipo || '',
+    `"${(e.areaGeneradora?.nombre || 'UCC').replace(/"/g, '""')}"`,
+    new Date(e.fechaCierre).toLocaleString()
+  ]);
+  
+  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `reporte_archivo_${new Date().getTime()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 onMounted(() => {
   loadExpedientes();
 });
@@ -34,11 +61,14 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="page-header">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
       <div>
         <h1>Archivo Central (HU-10)</h1>
         <p>Resguardo de acuses de recibo y expedientes cerrados.</p>
       </div>
+      <button @click="exportarCSV" class="btn btn-primary" style="background-color: #28a745; border-color: #28a745;">
+        Exportar a CSV
+      </button>
     </div>
 
     <div class="glass-panel" style="padding: 1.5rem;">

@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth.store';
+import { imprimirAcuse } from '../utils/print';
 
 const despachos = ref<any[]>([]);
 const areas = ref<{id: number; nombre: string}[]>([]);
@@ -220,12 +221,17 @@ onMounted(() => {
             <td>{{ item.destinatario }}</td>
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
-            <td>
+            <td style="display: flex; gap: 0.5rem;">
               <button 
                 v-if="item.estado === 'ACUSE_PENDIENTE' && ['ADMIN', 'OPERADOR_UCC'].includes(useAuthStore().userRole)"
                 @click="abrirModalAcuse(item.id)" 
                 class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background-color: #10b981; border-color: #10b981; color: white;">
-                Subir Acuse y Cerrar
+                Subir Acuse
+              </button>
+              <button 
+                @click="imprimirAcuse(item, 'DESPACHO')"
+                class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                Imprimir
               </button>
             </td>
           </tr>

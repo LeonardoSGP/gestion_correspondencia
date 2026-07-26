@@ -1,7 +1,7 @@
-<script setup lang="ts">
-import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
+import Swal from 'sweetalert2';
+import { imprimirAcuse } from '../utils/print';
 import { useAuthStore } from '../stores/auth.store';
 
 const authStore = useAuthStore();
@@ -136,6 +136,7 @@ onMounted(() => {
             <th>Remitente</th>
             <th>Estado</th>
             <th>Fecha</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody v-if="!loading">
@@ -145,9 +146,13 @@ onMounted(() => {
             <td>{{ item.remitente }}</td>
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
+            <td class="actions-cell">
+              <button class="btn-icon view" title="Ver Detalles">👁️</button>
+              <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">🖨️</button>
+            </td>
           </tr>
           <tr v-if="correspondencias.length === 0">
-            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
               No hay correspondencias registradas.
             </td>
           </tr>

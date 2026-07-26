@@ -1,14 +1,67 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
 import { useRouter } from 'vue-router';
-import { LogOut } from 'lucide-vue-next';
+import { LogOut, Search } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
+import api from '../services/api';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const searchQuery = ref('');
 
 const logout = async () => {
   await authStore.logout();
   router.push('/login');
+};
+
+const handleSearch = async () => {
+  if (!searchQuery.value.trim()) return;
+  try {
+    const response = await api.get(`/archivo/buscar?folio=${searchQuery.value.trim()}`);
+    const results = response.data;
+    
+    if (results.length === 0) {
+      Swal.fire('No encontrado', 'No se encontró correspondencia con ese folio.', 'info');
+      return;
+    }
+    
+    const doc = results[0];
+    
+    // Fetch historial
+    const histResponse = await api.get(`/archivo/${doc.id}/historial`);
+    const historial = histResponse.data;
+    
+    let timelineHtml = '<div style="text-align: left; font-size: 0.9em; max-height: 300px; overflow-y: auto;">';
+    historial.forEach((h: any) => {
+      const date = new Date(h.createdAt).toLocaleString();
+      timelineHtml += `
+        <div style="margin-bottom: 10px; border-left: 3px solid #0056b3; padding-left: 10px;">
+          <strong>${date}</strong><br>
+          <span style="color: #666;">${h.accion} (${h.estadoNuevo})</span><br>
+          <em>${h.detalle}</em>
+        </div>
+      `;
+    });
+    timelineHtml += '</div>';
+
+    Swal.fire({
+      title: `Folio: ${doc.folio}`,
+      html: `
+        <p><strong>Asunto:</strong> ${doc.asunto}</p>
+        <p><strong>Estado Actual:</strong> ${doc.estado}</p>
+        <hr>
+        <h4 style="text-align: left; margin-bottom: 10px;">Trazabilidad:</h4>
+        ${timelineHtml}
+      `,
+      width: '600px',
+      confirmButtonText: 'Cerrar'
+    });
+    
+    searchQuery.value = '';
+  } catch (error) {
+    Swal.fire('Error', 'No se pudo realizar la búsqueda.', 'error');
+  }
 };
 </script>
 
@@ -45,6 +98,18 @@ const logout = async () => {
     </aside>
 
     <main class="main-content">
+      <header class="topbar">
+        <div class="search-container">
+          <Search class="search-icon" :size="18" />
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            @keyup.enter="handleSearch"
+            placeholder="Buscar por folio y presiona Enter..." 
+            class="search-input"
+          />
+        </div>
+      </header>
       <router-view />
     </main>
   </div>
@@ -106,7 +171,52 @@ const logout = async () => {
 
 .main-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  padding: 1rem 2rem;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0,86,179, 0.1);
+}
+
+.main-content > div {
   padding: 2rem;
   overflow-y: auto;
+  flex: 1;
 }
 </style>
