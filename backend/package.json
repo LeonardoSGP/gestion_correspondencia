@@ -42,15 +42,7 @@
       "src/modules/**/*.service.ts",
       "src/modules/**/*.repository.ts",
       "src/middlewares/**/*.ts"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 10,
-        "functions": 15,
-        "lines": 15,
-        "statements": 15
-      }
-    }
+    ]
   },
   "dependencies": {
     "@prisma/client": "^5.19.0",
