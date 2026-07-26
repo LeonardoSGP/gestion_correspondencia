@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import Swal from 'sweetalert2';
