@@ -19,17 +19,27 @@ const loadDistribuciones = async () => {
 
 const confirmarEntrega = async (id: number) => {
   const result = await Swal.fire({
-    title: '¿Confirmar entrega?',
-    text: '¿Confirmar entrega a esta área?',
-    icon: 'question',
+    title: 'Confirmar entrega',
+    html: `
+      <input id="swal-recibio" class="swal2-input" placeholder="Recibió (Nombre)">
+      <input id="swal-obs" class="swal2-input" placeholder="Observaciones">
+    `,
     showCancelButton: true,
-    confirmButtonText: 'Sí, confirmar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: 'Confirmar',
+    cancelButtonText: 'Cancelar',
+    preConfirm: () => {
+      const recibio = (document.getElementById('swal-recibio') as HTMLInputElement).value;
+      const obs = (document.getElementById('swal-obs') as HTMLInputElement).value;
+      if (!recibio) {
+        Swal.showValidationMessage('El nombre de quien recibió es requerido');
+      }
+      return { recibio, obs };
+    }
   });
 
   if (result.isConfirmed) {
     try {
-      await api.patch(`/distribucion/${id}/confirmar`, { observaciones: 'Entregado conforme' });
+      await api.patch(`/distribucion/${id}/confirmar`, { observaciones: `Recibió: ${result.value.recibio}. ${result.value.obs}` });
       loadDistribuciones();
       Swal.fire({ title: 'Éxito', text: 'Entrega confirmada', icon: 'success' });
     } catch (error: any) {

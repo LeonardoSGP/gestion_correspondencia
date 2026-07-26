@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { imprimirAcuse } from '../utils/print';
 import { mostrarDetallesCorrespondencia } from '../utils/detalles';
 import { useAuthStore } from '../stores/auth.store';
-import { Eye, Printer } from 'lucide-vue-next';
+import { Eye, Printer, Upload } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const correspondencias = ref<any[]>([]);
@@ -58,6 +58,47 @@ const registrarRecepcion = async () => {
   } catch (error: any) {
     console.error('Error registrando correspondencia', error);
     Swal.fire({ title: 'Error', text: `No se pudo registrar: ${error.response?.data?.message || error.message}`, icon: 'error' });
+  }
+};
+
+const subirAcuse = async (item: any) => {
+  const { value: formValues } = await Swal.fire({
+    title: 'Subir Acuse',
+    html: `
+      <input type="file" id="swal-file" class="swal2-file" accept="image/*,.pdf" style="margin-bottom: 10px; width: 100%;">
+      <input id="swal-obs" class="swal2-input" placeholder="Observaciones">
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Subir Acuse',
+    preConfirm: () => {
+      const fileInput = document.getElementById('swal-file') as HTMLInputElement;
+      const obsInput = document.getElementById('swal-obs') as HTMLInputElement;
+      if (!fileInput.files || fileInput.files.length === 0) {
+        Swal.showValidationMessage('Debe seleccionar un archivo');
+      }
+      return { file: fileInput.files?.[0], obs: obsInput.value };
+    }
+  });
+
+  if (formValues && formValues.file) {
+    try {
+      const formData = new FormData();
+      formData.append('acuse', formValues.file);
+      formData.append('observaciones', formValues.obs);
+
+      await api.post(`/archivo/${item.id}/acuse`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // Cerrar el ciclo para que pase a Archivo
+      await api.post(`/archivo/${item.id}/cerrar`, { observaciones: 'Ciclo cerrado en recepción' });
+
+      Swal.fire('Éxito', 'Acuse subido y ciclo cerrado', 'success');
+      loadCorrespondencia();
+    } catch (error: any) {
+      console.error(error);
+      Swal.fire('Error', error.response?.data?.message || 'No se pudo subir el acuse', 'error');
+    }
   }
 };
 
@@ -155,6 +196,9 @@ onMounted(() => {
               </button>
               <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">
                 <Printer :size="18" />
+              </button>
+              <button v-if="item.estado === 'ENTREGADA_A_AREA' || item.estado === 'ENTREGADA'" class="btn-icon" style="color: #28a745;" @click="subirAcuse(item)" title="Subir Acuse Digitalizado">
+                <Upload :size="18" />
               </button>
             </td>
           </tr>
