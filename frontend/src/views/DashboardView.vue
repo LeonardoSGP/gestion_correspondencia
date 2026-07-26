@@ -39,10 +39,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dashboard-header">
-    <h1>Panel de Control</h1>
-    <p>Bienvenido al Sistema de Gestión de Correspondencia, {{ authStore.user?.nombre }} ({{ authStore.userRole }})</p>
-  </div>
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <h1>Panel de Control</h1>
+      <p>Bienvenido al Sistema de Gestión de Correspondencia, {{ authStore.user?.nombre }} ({{ authStore.userRole }})</p>
+    </div>
 
   <div class="stats-grid">
     <div class="stat-card glass-panel">
@@ -86,7 +87,7 @@ onMounted(() => {
     </div>
   </div>
 
-  <!-- Eliminé la sección de Actividad Reciente simulada para evitar confusiones -->
+  </div>
 </template>
 
 <style scoped>

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import { imprimirAcuse } from '../utils/print';
+import { mostrarDetallesCorrespondencia } from '../utils/detalles';
 import { useAuthStore } from '../stores/auth.store';
 import { Eye, Printer } from 'lucide-vue-next';
 
@@ -149,7 +150,7 @@ onMounted(() => {
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
             <td class="actions-cell">
-              <button class="btn-icon view" title="Ver Detalles">
+              <button class="btn-icon view" @click="mostrarDetallesCorrespondencia(item)" title="Ver Detalles">
                 <Eye :size="18" />
               </button>
               <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">

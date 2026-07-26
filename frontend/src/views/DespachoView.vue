@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import api from '../services/api';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '../stores/auth.store';
 import { imprimirAcuse } from '../utils/print';
+import { mostrarDetallesCorrespondencia } from '../utils/detalles';
 import { Eye, Printer } from 'lucide-vue-next';
 
 const despachos = ref<any[]>([]);
@@ -223,7 +224,7 @@ onMounted(() => {
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
             <td class="actions-cell">
-              <button class="btn-icon view" title="Ver Detalles">
+              <button class="btn-icon view" @click="mostrarDetallesCorrespondencia(item)" title="Ver Detalles">
                 <Eye :size="18" />
               </button>
               <button 
