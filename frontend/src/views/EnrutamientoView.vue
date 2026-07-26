@@ -264,7 +264,13 @@ onMounted(() => {
   background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000;
 }
 .modal-content {
-  width: 100%; max-width: 500px; padding: 2rem; background: var(--bg-surface);
-  max-height: 90vh; overflow-y: auto;
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: var(--bg-surface);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 </style>
