@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import Swal from 'sweetalert2';
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
+import Swal from 'sweetalert2';
 import { useAuthStore } from '../stores/auth.store';
 import { imprimirAcuse } from '../utils/print';
+import { Eye, Printer } from 'lucide-vue-next';
 
 const despachos = ref<any[]>([]);
 const areas = ref<{id: number; nombre: string}[]>([]);
@@ -221,22 +222,23 @@ onMounted(() => {
             <td>{{ item.destinatario }}</td>
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
-            <td style="display: flex; gap: 0.5rem;">
+            <td class="actions-cell">
+              <button class="btn-icon view" title="Ver Detalles">
+                <Eye :size="18" />
+              </button>
               <button 
                 v-if="item.estado === 'ACUSE_PENDIENTE' && ['ADMIN', 'OPERADOR_UCC'].includes(useAuthStore().userRole)"
                 @click="abrirModalAcuse(item.id)" 
-                class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background-color: #10b981; border-color: #10b981; color: white;">
+                class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
                 Subir Acuse
               </button>
-              <button 
-                @click="imprimirAcuse(item, 'DESPACHO')"
-                class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                Imprimir
+              <button class="btn-icon print" @click="imprimirAcuse(item, 'DESPACHO')" title="Imprimir Acuse">
+                <Printer :size="18" />
               </button>
             </td>
           </tr>
           <tr v-if="despachos.length === 0">
-            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
               No hay despachos registrados.
             </td>
           </tr>
@@ -256,5 +258,42 @@ onMounted(() => {
 .data-table th { font-weight: 600; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; }
 .badge { background-color: #e0e7ff; color: var(--color-primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
-.modal-content { width: 100%; max-width: 600px; padding: 2rem; }
+.modal-content {
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.btn-icon.view {
+  color: #0056b3;
+}
+
+.btn-icon.print {
+  color: #28a745;
+}
 </style>

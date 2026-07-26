@@ -4,6 +4,7 @@ import api from '../services/api';
 import Swal from 'sweetalert2';
 import { imprimirAcuse } from '../utils/print';
 import { useAuthStore } from '../stores/auth.store';
+import { Eye, Printer } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const correspondencias = ref<any[]>([]);
@@ -148,8 +149,12 @@ onMounted(() => {
             <td><span class="badge">{{ item.estado }}</span></td>
             <td>{{ new Date(item.fechaRecepcion).toLocaleDateString() }}</td>
             <td class="actions-cell">
-              <button class="btn-icon view" title="Ver Detalles">👁️</button>
-              <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">🖨️</button>
+              <button class="btn-icon view" title="Ver Detalles">
+                <Eye :size="18" />
+              </button>
+              <button class="btn-icon print" @click="imprimirAcuse(item, 'RECEPCION')" title="Imprimir Acuse">
+                <Printer :size="18" />
+              </button>
             </td>
           </tr>
           <tr v-if="correspondencias.length === 0">
@@ -227,5 +232,35 @@ onMounted(() => {
   padding: 2rem;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.btn-icon.view {
+  color: #0056b3;
+}
+
+.btn-icon.print {
+  color: #28a745;
 }
 </style>

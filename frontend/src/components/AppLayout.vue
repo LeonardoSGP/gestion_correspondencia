@@ -118,8 +118,9 @@ const handleSearch = async () => {
 <style scoped>
 .dashboard-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--bg-main);
+  overflow: hidden;
 }
 
 .sidebar {
@@ -200,18 +201,19 @@ const handleSearch = async () => {
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.875rem;
   background-color: var(--bg-main);
   color: var(--text-main);
+  transition: all 0.2s;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0,86,179, 0.1);
+  box-shadow: 0 0 0 3px rgba(0,86,179, 0.15);
 }
 
 .main-content > div {
