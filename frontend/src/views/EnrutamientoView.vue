@@ -165,10 +165,10 @@ onMounted(() => {
             <td>{{ ruta.alcance }}</td>
             <td><span class="badge">{{ ruta.estado }}</span></td>
             <td>
-              <button 
-                v-if="(ruta.estado === 'ASIGNADA' || ruta.estado === 'EN_TRANSITO') && (authStore.userRole !== 'MENSAJERO' || authStore.user?.id === ruta.mensajeroId)"
+              <button class="btn-icon" style="color: #10b981; padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                v-if="(ruta.estado === 'ASIGNADA' || ruta.estado === 'EN_TRANSITO') && (authStore.userRole === 'ADMIN' || (authStore.userRole === 'MENSAJERO' && authStore.user?.id === ruta.mensajeroId))"
                 @click="marcarEntregado(ruta.id)" 
-                class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                title="Marcar como Entregada">
                 Marcar Entregado
               </button>
             </td>
